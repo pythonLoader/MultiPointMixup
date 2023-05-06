@@ -1,0 +1,4 @@
+# ninja log v5
+0	18487	1680372605653048480	/home/ssawmya-local/CV/project/sagemix_new/SageMix/pointcloud/emd_/build/temp.linux-x86_64-cpython-37/emd/emd.o	c17426ca8fd5d437
+2	8657	1682471465443435468	/home/ssawmya-local/CV/project/sagemix_new/SageMix/pointcloud/emd_/build/temp.linux-x86_64-cpython-37/emd/emd_cuda.o	e498cc8b3621257f
+2	16476	1682471473255387776	/home/ssawmya-local/CV/project/sagemix_new/SageMix/pointcloud/emd_/build/temp.linux-x86_64-cpython-37/emd/emd.o	8f9c2302058f2651
