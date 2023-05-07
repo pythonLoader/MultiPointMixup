@@ -1,4 +1,4 @@
-# SageMix for point cloud classification
+# MultiPointMixup for Point Cloud Classification
 ## Installation
 ```
 # Create and activate environment using conda
