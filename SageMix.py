@@ -9,7 +9,7 @@ class SageMix:
         self.beta = torch.distributions.beta.Beta(torch.tensor([args.theta]), torch.tensor([args.theta]))
 
     
-    def mix(self, xyz, label, saliency=None):
+    def mix(self, xyz, label, saliency=None, mixing_idx=0):
         """
         Args:
             xyz (B,N,3)
@@ -79,9 +79,15 @@ class SageMix:
         #Eq.(8) for new label
         target = weight.sum(1)
         target = target / target.sum(-1, keepdim=True)
-        label_onehot = torch.zeros(B, self.num_class).cuda().scatter(1, label.view(-1, 1), 1)
-        label_perm_onehot = label_onehot[idxs]
-        label = target[:, 0, None] * label_onehot + target[:, 1, None] * label_perm_onehot 
+        
+        if mixing_idx == 0:
+            label_onehot = torch.zeros(B, self.num_class).cuda().scatter(1, label.view(-1, 1), 1)
+            label_perm_onehot = label_onehot[idxs]
+            label = target[:, 0, None] * label_onehot + target[:, 1, None] * label_perm_onehot
+
+        else:
+            label_onehot = torch.zeros(B, self.num_class).cuda().scatter(1, label.view(-1, 1), 1)
+
         
         return x, label
     

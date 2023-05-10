@@ -99,6 +99,7 @@ def train(args, io):
         train_true = []
         for data, label in tqdm(train_loader):
             data, label = data.to(device), label.to(device).squeeze()
+            print("data shape", data.shape)
             batch_size = data.size()[0]
             
             ####################
@@ -112,7 +113,12 @@ def train(args, io):
             opt.zero_grad()
             saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
             data, label = sagemix.mix(data, label, saliency)
+
+            
+            mixed_saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
+            print("data shape", data.shape)
             model.train()
+            # break
                 
             opt.zero_grad()
             logits = model(data.permute(0,2,1))

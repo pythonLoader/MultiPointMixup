@@ -434,3 +434,17 @@ Namespace(batch_size=32, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eva
 Using GPU : 0 from 2 devices
 Namespace(batch_size=32, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.001, model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=0.3, test_batch_size=16, theta=0.2, use_sgd=True)
 Using GPU : 0 from 2 devices
+Namespace(batch_size=32, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.001, model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=0.3, test_batch_size=16, theta=0.2, use_sgd=True)
+Using GPU : 0 from 1 devices
+Namespace(batch_size=32, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.001, model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=0.3, test_batch_size=16, theta=0.2, use_sgd=True)
+Using GPU : 0 from 1 devices
+Namespace(batch_size=32, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.001, model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=0.3, test_batch_size=16, theta=0.2, use_sgd=True)
+Using GPU : 0 from 1 devices
+Namespace(batch_size=32, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.001, model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=0.3, test_batch_size=16, theta=0.2, use_sgd=True)
+Using GPU : 0 from 1 devices
+Namespace(batch_size=32, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.001, model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=0.3, test_batch_size=16, theta=0.2, use_sgd=True)
+Using GPU : 0 from 1 devices
+Namespace(batch_size=32, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.001, model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=0.3, test_batch_size=16, theta=0.2, use_sgd=True)
+Using GPU : 0 from 1 devices
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.001, model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=0.3, test_batch_size=16, theta=0.2, use_sgd=True)
+Using GPU : 0 from 1 devices

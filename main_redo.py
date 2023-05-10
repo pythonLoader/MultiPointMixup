@@ -108,26 +108,40 @@ def train(args, io):
             model.eval()
             data_var = Variable(data.permute(0,2,1), requires_grad=True)
             logits = model(data_var)
+            print("logits shape", logits.shape)
+            print("label shape", label.shape)
             loss = cal_loss(logits, label, smoothing=False)
             loss.backward()
             opt.zero_grad()
             saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
-            data, label = sagemix.mix(data, label, saliency)
+            data2, label2 = sagemix.mix(data, label, saliency, mixing_idx=0)
+
+            # model.eval()
+            data_var2 = Variable(data2.permute(0,2,1), requires_grad=True)
+            logits2 = model(data_var2)
+            print("logits2 shape", logits2.shape)
+            print("label2 shape", label2.shape)
+            loss2 = criterion(logits2, label2)
+            #cal_loss(logits2, label2, smoothing=False)
+            loss2.backward()
+            opt.zero_grad()
+            saliency2 = torch.sqrt(torch.mean(data_var2.grad**2,1))
+            data3, label3 = sagemix.mix(data2, label2, saliency2, mixing_idx=1)
 
             
-            mixed_saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
-            print("data shape", data.shape)
+            # mixed_saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
+            # print("data shape", data.shape)
             model.train()
             # break
                 
             opt.zero_grad()
-            logits = model(data.permute(0,2,1))
-            loss = criterion(logits, label)
-            loss.backward()
+            logits3 = model(data3.permute(0,2,1))
+            loss3 = criterion(logits3, label3)
+            loss3.backward()
             opt.step()
-            preds = logits.max(dim=1)[1]
+            preds = logits3.max(dim=1)[1]
             count += batch_size
-            train_loss += loss.item() * batch_size
+            train_loss += loss3.item() * batch_size
             
         scheduler.step()
         outstr = 'Train %d, loss: %.6f' % (epoch, train_loss*1.0/count)
