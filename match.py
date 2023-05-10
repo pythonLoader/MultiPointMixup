@@ -13,20 +13,22 @@ def to_onehot(idx, n_input, device='cuda'):
     return idx_onehot
 
 
-def random_initialize(n_input, n_output, height, width):
+def random_initialize(n_input, n_output,n_points):
     '''Initialization of labeling for Co-Mixup'''
-    return np.random.randint(0, n_input, (n_output, width, height))
+    return np.random.randint(0, n_input, (n_output, n_points))
 
 
 def obj_fn(cost_matrix, mask_onehot, beta, gamma):
     '''Calculate objective without thresholding'''
-    n_output, height, width, n_input = mask_onehot.shape
-    mask_idx_sum = mask_onehot.reshape(n_output, height * width, n_input).sum(1)
+    n_output, n_points, n_input = mask_onehot.shape
+    mask_idx_sum = mask_onehot.reshape(n_output, n_points, n_input).sum(1)
 
     loss = 0
-    loss += torch.sum(cost_matrix.permute(1, 2, 0).unsqueeze(0) * mask_onehot)
-    loss += beta / 2 * (((mask_onehot[:, :-1, :, :] - mask_onehot[:, 1:, :, :])**2).sum() +
-                        ((mask_onehot[:, :, :-1, :] - mask_onehot[:, :, 1:, :])**2).sum())
+    print("cost shape", cost_matrix.shape)
+    print("mask shape", mask_onehot.shape)
+    loss += torch.sum(cost_matrix.permute(1, 0).unsqueeze(0) * mask_onehot)
+    loss += beta / 2 * (((mask_onehot[:, :-1, :] - mask_onehot[:, 1:, :])**2).sum())
+    # print(loss.shape)
     loss += gamma * (torch.sum(mask_idx_sum.sum(0)**2) - torch.sum(mask_idx_sum**2))
 
     return loss
@@ -38,7 +40,7 @@ def obj_fn_thres(cost_matrix, mask_onehot, beta, gamma, thres):
     mask_idx_sum = mask_onehot.reshape(n_output, height * width, n_input).sum(1)
 
     loss = 0
-    loss += torch.sum(cost_matrix.permute(1, 2, 0).unsqueeze(0) * mask_onehot)
+    loss += torch.sum(cost_matrix.permute(1, 0).unsqueeze(0) * mask_onehot)
     loss += beta / 2 * (((mask_onehot[:, :-1, :, :] - mask_onehot[:, 1:, :, :])**2).sum() +
                         ((mask_onehot[:, :, :-1, :] - mask_onehot[:, :, 1:, :])**2).sum())
 
@@ -63,7 +65,7 @@ def mix_input(mask_onehot, input_sp, target_reweighted, sc=None):
     if sc is None:
         mask_target = torch.matmul(mask_onehot, target_reweighted)
     else:
-        weighted_mask = mask_onehot * sc.permute(1, 2, 0).unsqueeze(0)
+        weighted_mask = mask_onehot * sc.permute(1, 0).unsqueeze(0)
         mask_target = torch.matmul(weighted_mask, target_reweighted)
 
     target = mask_target.reshape(n_output, height * width, n_class).sum(-2)
@@ -95,7 +97,8 @@ def resolve_label(assigned_label_total, device='cuda'):
 
 def graphcut_multi(cost, beta=1, algorithm='swap', n_label=0, add_idx=None):
     '''find optimal labeling using Graph-Cut algorithm'''
-    height, width, n_input = cost.shape
+    print("cost shape in graphcut_multi:",cost.shape)
+    n_points, n_input = cost.shape
 
     unary = np.ascontiguousarray(cost)
     pairwise = (np.ones(shape=(n_input, n_input), dtype=np.float32) -
@@ -109,14 +112,14 @@ def graphcut_multi(cost, beta=1, algorithm='swap', n_label=0, add_idx=None):
         pairwise[:-3, -3:][add_idx, :] = np.array([[0.25, 0.25, 1], [0.25, 1, 0.25],
                                                    [1, 0.25, 0.25]])
 
-    cost_v = beta * np.ones(shape=[height - 1, width], dtype=np.float32)
-    cost_h = beta * np.ones(shape=[height, width - 1], dtype=np.float32)
+    cost_v = beta * np.ones(shape=n_points, dtype=np.float32)
+    cost_h = beta * np.ones(shape=n_points, dtype=np.float32)
 
     mask_idx = gco.cut_grid_graph(unary, pairwise, cost_v, cost_h, algorithm=algorithm)
     return mask_idx
 
 
-def graphcut_wrapper(cost_penalty, label_count, n_input, height, width, beta, device, iter_idx=0):
+def graphcut_wrapper(cost_penalty, label_count, n_input, n_points, beta, device, iter_idx=0):
     '''Wrapper of graphcut_multi performing efficient extension to multi-label'''
     assigned_label = (label_count > 0)
     if iter_idx > 0:
@@ -136,7 +139,7 @@ def graphcut_wrapper(cost_penalty, label_count, n_input, height, width, beta, de
                                      algorithm='swap')
         mask_idx_onehot = to_onehot(torch.tensor(mask_idx_np, device=device, dtype=torch.long),
                                     n_input + 1,
-                                    device=device).reshape(height, width, n_input + 1)
+                                    device=device).reshape(n_points, n_input + 1)
 
         idx_matrix = torch.zeros([1, 1, n_input], device=device)
         idx_matrix[:, :, assigned_label] = 0.5
@@ -160,7 +163,7 @@ def graphcut_wrapper(cost_penalty, label_count, n_input, height, width, beta, de
                                      algorithm='swap')
         mask_idx_onehot = to_onehot(torch.tensor(mask_idx_np, device=device, dtype=torch.long),
                                     n_input + 3,
-                                    device=device).reshape(height, width, n_input + 3)
+                                    device=device).reshape(n_points, n_input + 3)
 
         idx_matrix = torch.zeros([3, n_input], device=device)
         idx_matrix[:, assigned_label] = soft_label
@@ -169,9 +172,10 @@ def graphcut_wrapper(cost_penalty, label_count, n_input, height, width, beta, de
     else:
         unary = cost_penalty.cpu().numpy()
         mask_idx_np = graphcut_multi(unary, beta=beta, algorithm='swap')
+        print("mask idx shape", mask_idx_np.shape)
         mask_onehot_i = to_onehot(torch.tensor(mask_idx_np, device=device, dtype=torch.long),
                                   n_input,
-                                  device=device).reshape(height, width, n_input)
+                                  device=device).reshape(n_points, n_input)
 
     return mask_onehot_i
 
@@ -190,29 +194,33 @@ def get_onehot_matrix(cost_matrix,
                       niter=3,
                       device='cuda'):
     '''Iterative submodular minimization algorithm with the modularization of supermodular term'''
-    n_input, height, width = cost_matrix.shape
-    thres = thres * height * width
-    beta = beta / height / width
-    gamma = gamma / height / width
-    eta = eta / height / width
+    print("cost matrix shape inside get onehot matrix:",cost_matrix.shape)
+    n_input, n_points = cost_matrix.shape
+    thres = thres * n_points
+    beta = beta / n_points
+    gamma = gamma / n_points
+    eta = eta / n_points
 
     add_cost = None
 
     # Add prior term
     lam = mixup_alpha * torch.ones(n_input, device=device)
-    alpha = torch.distributions.dirichlet.Dirichlet(lam).sample().reshape(n_input, 1, 1)
+    
+    alpha = torch.distributions.dirichlet.Dirichlet(lam).sample().reshape(n_input, 1)
+    print("alpha shape:",alpha.shape)
+    print("eta shape",eta)
     cost_matrix -= eta * torch.log(alpha + 1e-8)
 
     with torch.no_grad():
         # Init
         if idx is None:
-            mask_idx = torch.tensor(random_initialize(n_input, n_output, height, width),
+            mask_idx = torch.tensor(random_initialize(n_input, n_output, n_points),
                                     device=device)
         else:
             mask_idx = idx
 
         mask_onehot = to_onehot(mask_idx.reshape(-1), n_input,
-                                device=device).reshape([n_output, height, width, n_input])
+                                device=device).reshape([n_output, n_points, n_input])
 
         loss_prev = obj_fn(cost_matrix, mask_onehot, beta, gamma)
         penalty = to_onehot(mask_idx.reshape(-1), n_input, device=device).sum(0).reshape(-1, 1, 1)
@@ -220,29 +228,31 @@ def get_onehot_matrix(cost_matrix,
         # Main loop
         for iter_idx in range(niter):
             for i in range(n_output):
-                label_count = mask_onehot[i].reshape([height * width, n_input]).sum(0)
-                penalty -= label_count.reshape(-1, 1, 1)
+                label_count = mask_onehot[i].reshape([n_points, n_input]).sum(0)
+                penalty -= label_count.reshape(-1, 1)
                 if thres_type == 'hard':
                     modular_penalty = (2 * gamma * (
                         (A @ penalty.squeeze() > thres).float() * A @ penalty.squeeze())).reshape(
-                            -1, 1, 1)
+                            -1, 1)
                 elif thres_type == 'soft':
                     modular_penalty = (2 * gamma * ((A @ penalty.squeeze() > thres).float() *
                                                     (A @ penalty.squeeze() - thres))).reshape(
-                                                        -1, 1, 1)
+                                                        -1, 1)
                 else:
                     raise AssertionError("wrong threshold type!")
 
                 if add_cost is not None:
                     cost_penalty = (cost_matrix + modular_penalty +
-                                    gamma * add_cost[i].reshape(-1, 1, 1)).permute(1, 2, 0)
+                                    gamma * add_cost[i].reshape(-1, 1)).permute(1, 0)
                 else:
-                    cost_penalty = (cost_matrix + modular_penalty).permute(1, 2, 0)
+                    print("Idk where this is, cost_penalty:",cost_matrix.shape)
+                    print("modular_penalty:",modular_penalty.shape)
+                    cost_penalty = (cost_matrix + modular_penalty).permute(1, 0)
 
-                mask_onehot[i] = graphcut_wrapper(cost_penalty, label_count, n_input, height, width,
+                mask_onehot[i] = graphcut_wrapper(cost_penalty, label_count, n_input, n_points,
                                                   beta, device, iter_idx)
-                penalty += mask_onehot[i].reshape([height * width,
-                                                   n_input]).sum(0).reshape(-1, 1, 1)
+                penalty += mask_onehot[i].reshape([n_points,
+                                                   n_input]).sum(0).reshape(-1, 1)
 
             if iter_idx == niter - 2 and set_resolve:
                 assigned_label_total = (mask_onehot.reshape(n_output, -1, n_input).sum(1) >
