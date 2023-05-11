@@ -16,6 +16,7 @@ class SageMix:
             label (B)
             saliency (B,N): Defaults to None.
         """        
+        # print(xyz.shape)
         B, N, _ = xyz.shape
         # print(xyz.shape)
         idxs = torch.randperm(B)
