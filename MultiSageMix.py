@@ -1,838 +1,417 @@
-{
- "cells": [
-  {
-   "cell_type": "code",
-   "execution_count": 1,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "from __future__ import #print_function\n",
-    "import os\n",
-    "import argparse\n",
-    "import torch\n",
-    "import torch.nn as nn\n",
-    "import torch.optim as optim\n",
-    "import sklearn.metrics as metrics\n",
-    "import numpy as np\n",
-    "\n",
-    "from torch.optim.lr_scheduler import CosineAnnealingLR\n",
-    "from torch.autograd import Variable\n",
-    "from torch.utils.data import DataLoader\n",
-    "from tqdm import tqdm\n",
-    "\n",
-    "\n",
-    "from data import ModelNet40, ScanObjectNN\n",
-    "from model import PointNet, DGCNN\n",
-    "from util import cal_loss, cal_loss_mix, IOStream\n",
-    "import gco"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 2,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "import os\n",
-    "os.environ['CUDA_LAUNCH_BLOCKING'] = '1'\n",
-    "\n",
-    "args = argparse.Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 3,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "num_points = 1024\n",
-    "dataset = ModelNet40(partition='train', num_points=num_points)\n",
-    "batch_size=args.batch_size\n",
-    "\n",
-    "test_batch_size = args.test_batch_size\n",
-    "train_loader = DataLoader(dataset, num_workers=8,\n",
-    "                        batch_size=batch_size, shuffle=True, drop_last=True)\n",
-    "test_loader = DataLoader(ModelNet40(partition='test', num_points=num_points), num_workers=8,\n",
-    "                        batch_size=test_batch_size, shuffle=True, drop_last=False)\n",
-    "num_class=40"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 4,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "# import torch\n",
-    "# from emd_ import emd_module\n",
-    "\n",
-    "# class SageMix:\n",
-    "#     def __init__(self, args, device, num_class=40):\n",
-    "#         self.num_class = num_class\n",
-    "#         self.EMD = emd_module.emdModule()\n",
-    "#         self.sigma = args.sigma\n",
-    "#         self.beta = torch.distributions.beta.Beta(torch.tensor([args.theta]), torch.tensor([args.theta]))\n",
-    "#         self.device = device\n",
-    "\n",
-    "#     def mix(self, xyz, label, saliency=None):\n",
-    "#         \"\"\"\n",
-    "#         Args:\n",
-    "#             xyz (B,N,3)\n",
-    "#             label (B)\n",
-    "#             saliency (B,N): Defaults to None.\n",
-    "#         \"\"\"        \n",
-    "#         B, N, _ = xyz.shape\n",
-    "#         # ##print(xyz.shape)\n",
-    "#         idxs = torch.randperm(B)\n",
-    "\n",
-    "        \n",
-    "#         #Optimal assignment in Eq.(3)\n",
-    "#         # perm = xyz[idxs]\n",
-    "#         dist_mat = torch.empty(B, B, 1024)\n",
-    "#         ass_mat = torch.empty(B,B,1024)\n",
-    "#         dist_mat = dist_mat.to(self.device)\n",
-    "        \n",
-    "#         # #print(\"Starting to compute optimal assignment (Heuristic-1)\")\n",
-    "#         for idx,point in enumerate(xyz):\n",
-    "#             # perm = torch.tensor([point for x in range(B))\n",
-    "#             # #print(point.shape)\n",
-    "#             perm = point.repeat(B,1)\n",
-    "#             # #print(perm.shape)\n",
-    "\n",
-    "#             perm  = perm.reshape(perm.shape[0]//1024,1024,3)\n",
-    "            \n",
-    "#             dist, ass = self.EMD(xyz, perm, 0.005, 500) # mapping\n",
-    "#                  # 32,1024\n",
-    "#             dist_mat[idx] = dist\n",
-    "#             ass_mat[idx] = ass\n",
-    "\n",
-    "#             # #print('dist:',dist.shape)\n",
-    "#             # if idx % 10 == 0:\n",
-    "#             #     #print(\"Now doing\", idx)\n",
-    "        \n",
-    "#         # #print(dist_mat.shape)\n",
-    "#         dist_mat = torch.norm(dist_mat,dim=2)\n",
-    "#         avg_alignment_dist = torch.mean(dist_mat,dim=0)\n",
-    "#         # #print(avg_alignment_dist.shape)\n",
-    "#         # #print('avg_alignment:',avg_alignment_dist)\n",
-    "#         # #print('mean:',torch.mean(avg_alignment_dist))\n",
-    "#         # #print('min:',torch.min(avg_alignment_dist))\n",
-    "#         # #print('max:',torch.max(avg_alignment_dist))\n",
-    "#         # #print(torch.min(avg_alignment_dist))\n",
-    "#         # #print(torch.argmin(avg_alignment_dist).item())\n",
-    "\n",
-    "#         idx = torch.argmin(avg_alignment_dist).item()\n",
-    "#         # dist_mat = dist_mat.fill_diagonal_(100000.0)\n",
-    "    \n",
-    "        \n",
-    "#         # i,j = divmod(torch.argmin(dist_mat).item(),dist_mat.shape[1])\n",
-    "#         ass = ass_mat[idx]\n",
-    "        \n",
-    "#         ass = ass.long()\n",
-    "\n",
-    "#         # sz = ass.size(0)\n",
-    "#         perm_new = torch.zeros_like(perm).to(self.device)\n",
-    "#         # #print('perm:',perm)\n",
-    "#         # #print(perm_new.shape)\n",
-    "#         perm = xyz.clone()\n",
-    "#         # #print(\"idx:\",idx)\n",
-    "#         for i in range(B):\n",
-    "#             # #print('i:',i)\n",
-    "#             perm_new[i] = perm[i][ass[i]]\n",
-    "#             # #print('perm_i',perm[i])\n",
-    "#             # #print('perm_new_i',perm_new[i])\n",
-    "\n",
-    "#         # #print('perm_new',perm_new)\n",
-    "\n",
-    "#         return ass,perm_new,dist_mat\n",
-    "\n",
-    "#         # #print(\"Done with compute optimal assignment (Heuristic-1)\")\n",
-    "#         # #print(ass.shape)\n",
-    "        "
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 9,
-   "metadata": {},
-   "outputs": [
-    {
-     "data": {
-      "text/plain": [
-       "0.2"
-      ]
-     },
-     "execution_count": 9,
-     "metadata": {},
-     "output_type": "execute_result"
+from __future__ import print_function
+import os
+import argparse
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import sklearn.metrics as metrics
+import numpy as np
+
+from torch.optim.lr_scheduler import CosineAnnealingLR
+from torch.autograd import Variable
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+
+
+from data import ModelNet40, ScanObjectNN
+from model import PointNet, DGCNN
+from util import cal_loss, cal_loss_mix, IOStream
+import gco
+from emd_ import emd_module
+import wandb
+args = argparse.Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=200, eval=False, exp_name='MultiSageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+
+
+os.environ['CUDA_LAUNCH_BLOCKING'] = '1'
+
+
+num_points = 1024
+dataset = ModelNet40(partition='train', num_points=num_points)
+batch_size=args.batch_size
+
+test_batch_size = args.test_batch_size
+train_loader = DataLoader(dataset, num_workers=8,
+                        batch_size=batch_size, shuffle=True, drop_last=True)
+test_loader = DataLoader(ModelNet40(partition='test', num_points=num_points), num_workers=8,
+                        batch_size=test_batch_size, shuffle=True, drop_last=False)
+num_class=40
+
+if args.data == 'MN40':
+    dataset = ModelNet40(partition='train', num_points=args.num_points)
+    # args.batch_size = len(dataset)
+    args.batch_size = 40
+    #print('args.batch_size:',args.batch_size)
+    train_loader = DataLoader(dataset, num_workers=8,
+                            batch_size=args.batch_size, shuffle=True, drop_last=True)
+    test_loader = DataLoader(ModelNet40(partition='test', num_points=args.num_points), num_workers=8,
+                            batch_size=args.test_batch_size, shuffle=True, drop_last=False)
+    num_class=40
+elif args.data == 'SONN_easy':
+    train_loader = DataLoader(ScanObjectNN(partition='train', num_points=args.num_points, ver="easy"), num_workers=8,
+                            batch_size=args.batch_size, shuffle=True, drop_last=True)
+    test_loader = DataLoader(ScanObjectNN(partition='test', num_points=args.num_points, ver="easy"), num_workers=8,
+                            batch_size=args.test_batch_size, shuffle=True, drop_last=False)
+    num_class =15
+elif args.data == 'SONN_hard':
+    train_loader = DataLoader(ScanObjectNN(partition='train', num_points=args.num_points, ver="hard"), num_workers=8,
+                            batch_size=args.batch_size, shuffle=True, drop_last=True)
+    test_loader = DataLoader(ScanObjectNN(partition='test', num_points=args.num_points, ver="hard"), num_workers=8,
+                            batch_size=args.test_batch_size, shuffle=True, drop_last=False)
+    num_class =15
+
+
+device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
+
+
+
+#Try to load models
+if args.model == 'pointnet':
+    model = PointNet(args, num_class).to(device)
+elif args.model == 'dgcnn':
+    model = DGCNN(args, num_class).to(device)
+else:
+    raise Exception("Not implemented")
+
+
+class SageMix:
+    def __init__(self, args, num_class=40):
+        self.num_class = num_class
+        self.EMD = emd_module.emdModule()
+        self.sigma = args.sigma
+        self.beta = torch.distributions.beta.Beta(torch.tensor([args.theta]), torch.tensor([args.theta]))
+        self.beta2 = torch.distributions.beta.Beta(torch.tensor([2*args.theta]), torch.tensor([args.theta]))
+
+    
+    def mix(self, xyz, label, saliency=None, mixing_idx=0, device='cuda:0'):
+        """
+        Args:
+            xyz (B,N,3)
+            label (B)
+            saliency (B,N): Defaults to None.
+        """        
+        # #print("xyz shape", xyz.shape)
+        B, N, _ = xyz.shape
+        if mixing_idx == 0:
+            idxs = torch.randperm(B)
+
+            # #print(xyz)
+            
+            #Optimal assignment in Eq.(3)
+            perm = xyz[idxs]
+            
+            _, ass = self.EMD(xyz, perm, 0.005, 500) # mapping
+            ass = ass.long()
+            # #print(ass)
+            perm_new = torch.zeros_like(perm).to(device)#.cuda()
+            perm_saliency = torch.zeros_like(saliency).to(device)#.cuda()
+            
+            # #print(ass,ass.shape)
+            for i in range(B):
+                perm_new[i] = perm[i][ass[i]]
+                # #print(idxs)
+                # #print(ass)
+                # #print(saliency)
+                # #print("idxs shape", idxs.shape)
+                # #print("ass shape", ass.shape)
+                # #print("saliency shape", saliency.shape)
+                perm_saliency[i] = saliency[idxs][i][ass[i]]
+            
+            #####
+            # Saliency-guided sequential sampling
+            #####
+            #Eq.(4) in the main paper
+            saliency = saliency/saliency.sum(-1, keepdim=True)
+            anc_idx = torch.multinomial(saliency, 1, replacement=True)
+            anchor_ori = xyz[torch.arange(B), anc_idx[:,0]]
+            
+            #cal distance and reweighting saliency map for Eq.(5) in the main paper
+            sub = perm_new - anchor_ori[:,None,:]
+            dist = ((sub) ** 2).sum(2).sqrt()
+            perm_saliency = perm_saliency * dist
+            perm_saliency = perm_saliency/perm_saliency.sum(-1, keepdim=True)
+            
+            #Eq.(5) in the main paper
+            anc_idx2 = torch.multinomial(perm_saliency, 1, replacement=True)
+            anchor_perm = perm_new[torch.arange(B),anc_idx2[:,0]]
+                    
+                    
+            #####
+            # Shape-preserving continuous Mixup
+            #####
+            alpha = self.beta.sample((B,)).to(device)#.cuda()
+            sub_ori = xyz - anchor_ori[:,None,:]
+            sub_ori = ((sub_ori) ** 2).sum(2).sqrt()
+            #Eq.(6) for first sample
+            ker_weight_ori = torch.exp(-0.5 * (sub_ori ** 2) / (self.sigma ** 2))  #(M,N)
+            
+            sub_perm = perm_new - anchor_perm[:,None,:]
+            sub_perm = ((sub_perm) ** 2).sum(2).sqrt()
+            #Eq.(6) for second sample
+            ker_weight_perm = torch.exp(-0.5 * (sub_perm ** 2) / (self.sigma ** 2))  #(M,N)
+            
+            #Eq.(9)
+            weight_ori = ker_weight_ori * alpha 
+            weight_perm = ker_weight_perm * (1-alpha)
+            weight = (torch.cat([weight_ori[...,None],weight_perm[...,None]],-1)) + 1e-16
+            weight = weight/weight.sum(-1)[...,None]
+
+            #Eq.(8) for new sample
+            x = weight[:,:,0:1] * xyz + weight[:,:,1:] * perm_new
+            
+            #Eq.(8) for new label
+            target = weight.sum(1)
+            target = target / target.sum(-1, keepdim=True)
+            
+            label_onehot = torch.zeros(B, self.num_class).to(device).scatter(1, label.view(-1, 1), 1)
+            label_perm_onehot = label_onehot[idxs]
+            label = target[:, 0, None] * label_onehot + target[:, 1, None] * label_perm_onehot
+            return x, label
+        
+        else:
+            # #print("xyz shape mixing 1", xyz.shape)
+            B, N, _ = xyz.shape
+            split_idx = int(B/2)
+            # #print("split_idx", split_idx)
+            # #print("saliency shape", saliency.shape)
+
+            xyz1 = xyz[:split_idx]
+            xyz2 = xyz[split_idx:]
+            label1 = label[:split_idx]
+            label2 = label[split_idx:]
+            saliency1 = saliency[:split_idx]
+            saliency2 = saliency[split_idx:]
+
+            _, ass = self.EMD(xyz1, xyz2, 0.005, 500) # mapping
+            ass = ass.long()
+
+            #####
+            # Saliency-guided sequential sampling
+            #####
+            #Eq.(4) in the main paper
+            saliency1 = saliency1/saliency1.sum(-1, keepdim=True)
+            anc_idx = torch.multinomial(saliency1, 1, replacement=True)
+            anchor_ori = xyz1[torch.arange(split_idx), anc_idx[:,0]]
+
+            #cal distance and reweighting saliency map for Eq.(5) in the main paper
+            sub = xyz2 - anchor_ori[:,None,:]
+            dist = ((sub) ** 2).sum(2).sqrt()
+            # #print("saliency2 shape", saliency2.shape)
+            # #print("dist shape", dist.shape)
+            saliency2 = saliency2 * dist
+            saliency2 = saliency2/saliency2.sum(-1, keepdim=True)
+            
+            #Eq.(5) in the main paper
+            anc_idx2 = torch.multinomial(saliency2, 1, replacement=True)
+            anchor_2 = xyz2[torch.arange(split_idx),anc_idx2[:,0]]
+
+            alpha = self.beta.sample((split_idx,)).to(device)#.cuda()
+            sub_ori = xyz1 - anchor_ori[:,None,:]
+            sub_ori = ((sub_ori) ** 2).sum(2).sqrt()
+            #Eq.(6) for first sample
+            ker_weight_ori = torch.exp(-0.5 * (sub_ori ** 2) / (self.sigma ** 2))  #(M,N)
+
+            # #print("anchor_2 shape", anchor_2.shape)
+            sub_perm = xyz2 - anchor_2[:,None,:]
+            sub_perm = ((sub_perm) ** 2).sum(2).sqrt()
+            #Eq.(6) for second sample
+            ker_weight_perm = torch.exp(-0.5 * (sub_perm ** 2) / (self.sigma ** 2))  #(M,N)
+
+            #Eq.(9)
+            weight_ori = ker_weight_ori * alpha
+            weight_perm = ker_weight_perm * (1-alpha)
+            weight = (torch.cat([weight_ori[...,None],weight_perm[...,None]],-1)) + 1e-16
+            weight = weight/weight.sum(-1)[...,None]
+
+            #Eq.(8) for new sample
+            x = weight[:,:,0:1] * xyz1 + weight[:,:,1:] * xyz2
+
+            #Eq.(8) for new label
+            target = weight.sum(1)
+            target = target / target.sum(-1, keepdim=True)
+
+            label = target[:, 0, None] * label1 + target[:, 1, None] * label2
+
+
+
+            return x, label
+        
+
+
+io = IOStream('checkpoints/' + args.exp_name + '/run.log')
+io.cprint(str(args))
+
+if args.use_sgd:
+    #print("Use SGD")
+    opt = optim.SGD(model.parameters(), lr=args.lr*100, momentum=args.momentum, weight_decay=1e-4)
+else:
+    #print("Use Adam")
+    opt = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
+
+
+best_test_acc = 0
+sagemix=SageMix(args, num_class)
+scheduler = CosineAnnealingLR(opt, args.epochs, eta_min=args.lr)
+criterion = cal_loss_mix
+
+
+def interleave(a, b):
+    # Check that a and b have the same shape
+    assert a.shape == b.shape, "Tensors must have the same shape"
+    
+    # Expand dimensions
+    a = a.unsqueeze(1)
+    b = b.unsqueeze(1)
+
+    # Concatenate tensors
+    c = torch.cat((a, b), dim=1)
+
+    # Reshape tensor
+    c = c.view(-1, *a.shape[2:])
+
+    return c
+
+
+wandb.init(
+    # set the wandb project where this run will be logged
+    project="ThreePointSageMixup",
+    
+    # track hyperparameters and run metadata
+    config={
+    "learning_rate": args.lr,
+    "architecture": "Pointnet++",
+    "dataset": "MN40",
+    "epochs": args.epochs,
     }
-   ],
-   "source": [
-    "# args = argparse.Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.001, model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)\n",
-    "\n",
-    "# args.cuda\n",
-    "\n",
-    "args.theta"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 6,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "args.batch_size: 40\n"
-     ]
-    }
-   ],
-   "source": [
-    "if args.data == 'MN40':\n",
-    "    dataset = ModelNet40(partition='train', num_points=args.num_points)\n",
-    "    # args.batch_size = len(dataset)\n",
-    "    args.batch_size = 40\n",
-    "    #print('args.batch_size:',args.batch_size)\n",
-    "    train_loader = DataLoader(dataset, num_workers=8,\n",
-    "                            batch_size=args.batch_size, shuffle=True, drop_last=True)\n",
-    "    test_loader = DataLoader(ModelNet40(partition='test', num_points=args.num_points), num_workers=8,\n",
-    "                            batch_size=args.test_batch_size, shuffle=True, drop_last=False)\n",
-    "    num_class=40\n",
-    "elif args.data == 'SONN_easy':\n",
-    "    train_loader = DataLoader(ScanObjectNN(partition='train', num_points=args.num_points, ver=\"easy\"), num_workers=8,\n",
-    "                            batch_size=args.batch_size, shuffle=True, drop_last=True)\n",
-    "    test_loader = DataLoader(ScanObjectNN(partition='test', num_points=args.num_points, ver=\"easy\"), num_workers=8,\n",
-    "                            batch_size=args.test_batch_size, shuffle=True, drop_last=False)\n",
-    "    num_class =15\n",
-    "elif args.data == 'SONN_hard':\n",
-    "    train_loader = DataLoader(ScanObjectNN(partition='train', num_points=args.num_points, ver=\"hard\"), num_workers=8,\n",
-    "                            batch_size=args.batch_size, shuffle=True, drop_last=True)\n",
-    "    test_loader = DataLoader(ScanObjectNN(partition='test', num_points=args.num_points, ver=\"hard\"), num_workers=8,\n",
-    "                            batch_size=args.test_batch_size, shuffle=True, drop_last=False)\n",
-    "    num_class =15\n",
-    "\n",
-    "\n",
-    "device = torch.device(\"cuda:0\" if torch.cuda.is_available() else \"cpu\")\n",
-    "\n",
-    "#Try to load models\n",
-    "if args.model == 'pointnet':\n",
-    "    model = PointNet(args, num_class).to(device)\n",
-    "elif args.model == 'dgcnn':\n",
-    "    model = DGCNN(args, num_class).to(device)\n",
-    "else:\n",
-    "    raise Exception(\"Not implemented\")"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 32,
-   "metadata": {},
-   "outputs": [],
-   "source": [
-    "from emd_ import emd_module\n",
-    "class SageMix:\n",
-    "    def __init__(self, args, num_class=40):\n",
-    "        self.num_class = num_class\n",
-    "        self.EMD = emd_module.emdModule()\n",
-    "        self.sigma = args.sigma\n",
-    "        self.beta = torch.distributions.beta.Beta(torch.tensor([args.theta]), torch.tensor([args.theta]))\n",
-    "        self.beta2 = torch.distributions.beta.Beta(torch.tensor([2*args.theta]), torch.tensor([args.theta]))\n",
-    "\n",
-    "    \n",
-    "    def mix(self, xyz, label, saliency=None, mixing_idx=0, device='cuda:0'):\n",
-    "        \"\"\"\n",
-    "        Args:\n",
-    "            xyz (B,N,3)\n",
-    "            label (B)\n",
-    "            saliency (B,N): Defaults to None.\n",
-    "        \"\"\"        \n",
-    "        # #print(\"xyz shape\", xyz.shape)\n",
-    "        B, N, _ = xyz.shape\n",
-    "        if mixing_idx == 0:\n",
-    "            idxs = torch.randperm(B)\n",
-    "\n",
-    "            # #print(xyz)\n",
-    "            \n",
-    "            #Optimal assignment in Eq.(3)\n",
-    "            perm = xyz[idxs]\n",
-    "            \n",
-    "            _, ass = self.EMD(xyz, perm, 0.005, 500) # mapping\n",
-    "            ass = ass.long()\n",
-    "            # #print(ass)\n",
-    "            perm_new = torch.zeros_like(perm).to(device)#.cuda()\n",
-    "            perm_saliency = torch.zeros_like(saliency).to(device)#.cuda()\n",
-    "            \n",
-    "            # #print(ass,ass.shape)\n",
-    "            for i in range(B):\n",
-    "                perm_new[i] = perm[i][ass[i]]\n",
-    "                # #print(idxs)\n",
-    "                # #print(ass)\n",
-    "                # #print(saliency)\n",
-    "                # #print(\"idxs shape\", idxs.shape)\n",
-    "                # #print(\"ass shape\", ass.shape)\n",
-    "                # #print(\"saliency shape\", saliency.shape)\n",
-    "                perm_saliency[i] = saliency[idxs][i][ass[i]]\n",
-    "            \n",
-    "            #####\n",
-    "            # Saliency-guided sequential sampling\n",
-    "            #####\n",
-    "            #Eq.(4) in the main paper\n",
-    "            saliency = saliency/saliency.sum(-1, keepdim=True)\n",
-    "            anc_idx = torch.multinomial(saliency, 1, replacement=True)\n",
-    "            anchor_ori = xyz[torch.arange(B), anc_idx[:,0]]\n",
-    "            \n",
-    "            #cal distance and reweighting saliency map for Eq.(5) in the main paper\n",
-    "            sub = perm_new - anchor_ori[:,None,:]\n",
-    "            dist = ((sub) ** 2).sum(2).sqrt()\n",
-    "            perm_saliency = perm_saliency * dist\n",
-    "            perm_saliency = perm_saliency/perm_saliency.sum(-1, keepdim=True)\n",
-    "            \n",
-    "            #Eq.(5) in the main paper\n",
-    "            anc_idx2 = torch.multinomial(perm_saliency, 1, replacement=True)\n",
-    "            anchor_perm = perm_new[torch.arange(B),anc_idx2[:,0]]\n",
-    "                    \n",
-    "                    \n",
-    "            #####\n",
-    "            # Shape-preserving continuous Mixup\n",
-    "            #####\n",
-    "            alpha = self.beta.sample((B,)).to(device)#.cuda()\n",
-    "            sub_ori = xyz - anchor_ori[:,None,:]\n",
-    "            sub_ori = ((sub_ori) ** 2).sum(2).sqrt()\n",
-    "            #Eq.(6) for first sample\n",
-    "            ker_weight_ori = torch.exp(-0.5 * (sub_ori ** 2) / (self.sigma ** 2))  #(M,N)\n",
-    "            \n",
-    "            sub_perm = perm_new - anchor_perm[:,None,:]\n",
-    "            sub_perm = ((sub_perm) ** 2).sum(2).sqrt()\n",
-    "            #Eq.(6) for second sample\n",
-    "            ker_weight_perm = torch.exp(-0.5 * (sub_perm ** 2) / (self.sigma ** 2))  #(M,N)\n",
-    "            \n",
-    "            #Eq.(9)\n",
-    "            weight_ori = ker_weight_ori * alpha \n",
-    "            weight_perm = ker_weight_perm * (1-alpha)\n",
-    "            weight = (torch.cat([weight_ori[...,None],weight_perm[...,None]],-1)) + 1e-16\n",
-    "            weight = weight/weight.sum(-1)[...,None]\n",
-    "\n",
-    "            #Eq.(8) for new sample\n",
-    "            x = weight[:,:,0:1] * xyz + weight[:,:,1:] * perm_new\n",
-    "            \n",
-    "            #Eq.(8) for new label\n",
-    "            target = weight.sum(1)\n",
-    "            target = target / target.sum(-1, keepdim=True)\n",
-    "            \n",
-    "            label_onehot = torch.zeros(B, self.num_class).to(device).scatter(1, label.view(-1, 1), 1)\n",
-    "            label_perm_onehot = label_onehot[idxs]\n",
-    "            label = target[:, 0, None] * label_onehot + target[:, 1, None] * label_perm_onehot\n",
-    "            return x, label\n",
-    "        \n",
-    "        else:\n",
-    "            # #print(\"xyz shape mixing 1\", xyz.shape)\n",
-    "            B, N, _ = xyz.shape\n",
-    "            split_idx = int(B/2)\n",
-    "            # #print(\"split_idx\", split_idx)\n",
-    "            # #print(\"saliency shape\", saliency.shape)\n",
-    "\n",
-    "            xyz1 = xyz[:split_idx]\n",
-    "            xyz2 = xyz[split_idx:]\n",
-    "            label1 = label[:split_idx]\n",
-    "            label2 = label[split_idx:]\n",
-    "            saliency1 = saliency[:split_idx]\n",
-    "            saliency2 = saliency[split_idx:]\n",
-    "\n",
-    "            _, ass = self.EMD(xyz1, xyz2, 0.005, 500) # mapping\n",
-    "            ass = ass.long()\n",
-    "\n",
-    "            #####\n",
-    "            # Saliency-guided sequential sampling\n",
-    "            #####\n",
-    "            #Eq.(4) in the main paper\n",
-    "            saliency1 = saliency1/saliency1.sum(-1, keepdim=True)\n",
-    "            anc_idx = torch.multinomial(saliency1, 1, replacement=True)\n",
-    "            anchor_ori = xyz1[torch.arange(split_idx), anc_idx[:,0]]\n",
-    "\n",
-    "            #cal distance and reweighting saliency map for Eq.(5) in the main paper\n",
-    "            sub = xyz2 - anchor_ori[:,None,:]\n",
-    "            dist = ((sub) ** 2).sum(2).sqrt()\n",
-    "            # #print(\"saliency2 shape\", saliency2.shape)\n",
-    "            # #print(\"dist shape\", dist.shape)\n",
-    "            saliency2 = saliency2 * dist\n",
-    "            saliency2 = saliency2/saliency2.sum(-1, keepdim=True)\n",
-    "            \n",
-    "            #Eq.(5) in the main paper\n",
-    "            anc_idx2 = torch.multinomial(saliency2, 1, replacement=True)\n",
-    "            anchor_2 = xyz2[torch.arange(split_idx),anc_idx2[:,0]]\n",
-    "\n",
-    "            alpha = self.beta.sample((split_idx,)).to(device)#.cuda()\n",
-    "            sub_ori = xyz1 - anchor_ori[:,None,:]\n",
-    "            sub_ori = ((sub_ori) ** 2).sum(2).sqrt()\n",
-    "            #Eq.(6) for first sample\n",
-    "            ker_weight_ori = torch.exp(-0.5 * (sub_ori ** 2) / (self.sigma ** 2))  #(M,N)\n",
-    "\n",
-    "            # #print(\"anchor_2 shape\", anchor_2.shape)\n",
-    "            sub_perm = xyz2 - anchor_2[:,None,:]\n",
-    "            sub_perm = ((sub_perm) ** 2).sum(2).sqrt()\n",
-    "            #Eq.(6) for second sample\n",
-    "            ker_weight_perm = torch.exp(-0.5 * (sub_perm ** 2) / (self.sigma ** 2))  #(M,N)\n",
-    "\n",
-    "            #Eq.(9)\n",
-    "            weight_ori = ker_weight_ori * alpha\n",
-    "            weight_perm = ker_weight_perm * (1-alpha)\n",
-    "            weight = (torch.cat([weight_ori[...,None],weight_perm[...,None]],-1)) + 1e-16\n",
-    "            weight = weight/weight.sum(-1)[...,None]\n",
-    "\n",
-    "            #Eq.(8) for new sample\n",
-    "            x = weight[:,:,0:1] * xyz1 + weight[:,:,1:] * xyz2\n",
-    "\n",
-    "            #Eq.(8) for new label\n",
-    "            target = weight.sum(1)\n",
-    "            target = target / target.sum(-1, keepdim=True)\n",
-    "\n",
-    "            label = target[:, 0, None] * label1 + target[:, 1, None] * label2\n",
-    "\n",
-    "\n",
-    "\n",
-    "            return x, label\n",
-    "    "
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": 33,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stderr",
-     "output_type": "stream",
-     "text": [
-      "100%|██████████| 246/246 [00:39<00:00,  6.26it/s]\n"
-     ]
-    },
-    {
-     "ename": "NameError",
-     "evalue": "name 'io' is not defined",
-     "output_type": "error",
-     "traceback": [
-      "\u001b[0;31m---------------------------------------------------------------------------\u001b[0m",
-      "\u001b[0;31mNameError\u001b[0m                                 Traceback (most recent call last)",
-      "Cell \u001b[0;32mIn[33], line 154\u001b[0m\n\u001b[1;32m    152\u001b[0m scheduler\u001b[39m.\u001b[39mstep()\n\u001b[1;32m    153\u001b[0m outstr \u001b[39m=\u001b[39m \u001b[39m'\u001b[39m\u001b[39mTrain \u001b[39m\u001b[39m%d\u001b[39;00m\u001b[39m, loss: \u001b[39m\u001b[39m%.6f\u001b[39;00m\u001b[39m'\u001b[39m \u001b[39m%\u001b[39m (epoch, train_loss\u001b[39m*\u001b[39m\u001b[39m1.0\u001b[39m\u001b[39m/\u001b[39mcount)\n\u001b[0;32m--> 154\u001b[0m io\u001b[39m.\u001b[39mc\u001b[39m#print(outstr)\u001b[39;00m\n\u001b[1;32m    156\u001b[0m \u001b[39m####################\u001b[39;00m\n\u001b[1;32m    157\u001b[0m \u001b[39m# Test\u001b[39;00m\n\u001b[1;32m    158\u001b[0m \u001b[39m####################\u001b[39;00m\n\u001b[1;32m    159\u001b[0m test_loss \u001b[39m=\u001b[39m \u001b[39m0.0\u001b[39m\n",
-      "\u001b[0;31mNameError\u001b[0m: name 'io' is not defined"
-     ]
-    }
-   ],
-   "source": [
-    "# #!/usr/bin/env python\n",
-    "# -*- coding: utf-8 -*-\n",
-    "from __future__ import print_function\n",
-    "import os\n",
-    "import argparse\n",
-    "import torch\n",
-    "import torch.nn as nn\n",
-    "import torch.optim as optim\n",
-    "import sklearn.metrics as metrics\n",
-    "import numpy as np\n",
-    "\n",
-    "from torch.optim.lr_scheduler import CosineAnnealingLR\n",
-    "from torch.autograd import Variable\n",
-    "from torch.utils.data import DataLoader\n",
-    "from tqdm import tqdm\n",
-    "\n",
-    "\n",
-    "from data import ModelNet40, ScanObjectNN\n",
-    "from model import PointNet, DGCNN\n",
-    "from util import cal_loss, cal_loss_mix, IOStream\n",
-    "\n",
-    "io = IOStream('checkpoints/' + args.exp_name + '/run.log')\n",
-    "io.cprint(str(args))\n",
-    "\n",
-    "if args.use_sgd:\n",
-    "    #print(\"Use SGD\")\n",
-    "    opt = optim.SGD(model.parameters(), lr=args.lr*100, momentum=args.momentum, weight_decay=1e-4)\n",
-    "else:\n",
-    "    #print(\"Use Adam\")\n",
-    "    opt = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)\n",
-    "\n",
-    "\n",
-    "best_test_acc = 0\n",
-    "sagemix=SageMix(args, num_class)\n",
-    "scheduler = CosineAnnealingLR(opt, args.epochs, eta_min=args.lr)\n",
-    "criterion = cal_loss_mix\n",
-    "\n",
-    "\n",
-    "def interleave(a, b):\n",
-    "    # Check that a and b have the same shape\n",
-    "    assert a.shape == b.shape, \"Tensors must have the same shape\"\n",
-    "    \n",
-    "    # Expand dimensions\n",
-    "    a = a.unsqueeze(1)\n",
-    "    b = b.unsqueeze(1)\n",
-    "\n",
-    "    # Concatenate tensors\n",
-    "    c = torch.cat((a, b), dim=1)\n",
-    "\n",
-    "    # Reshape tensor\n",
-    "    c = c.view(-1, *a.shape[2:])\n",
-    "\n",
-    "    return c\n",
-    "\n",
-    "\n",
-    "for epoch in range(args.epochs):\n",
-    "\n",
-    "    ####################\n",
-    "    # Train\n",
-    "    ####################\n",
-    "    train_loss = 0.0\n",
-    "    count = 0.0\n",
-    "    model.train()\n",
-    "    train_pred = []\n",
-    "    train_true = []\n",
-    "    for data, label in tqdm(train_loader):\n",
-    "        data, label = data.to(device), label.to(device).squeeze()\n",
-    "        # #print(\"data shape\", data)\n",
-    "        batch_size = data.size()[0]\n",
-    "        split_idx = int(batch_size * 1/2)\n",
-    "        data01 = data[:split_idx, :, :]\n",
-    "        label01 = label[:split_idx]\n",
-    "        data2 = data[split_idx:, :, :]\n",
-    "        label2 = label[split_idx:]\n",
-    "        \n",
-    "        ####################\n",
-    "        # generate augmented sample\n",
-    "        ####################\n",
-    "        model.eval()\n",
-    "        data_var = Variable(data.permute(0,2,1), requires_grad=True)\n",
-    "        logits = model(data_var)\n",
-    "        loss = cal_loss(logits, label, smoothing=False)\n",
-    "        loss.backward()\n",
-    "        opt.zero_grad()\n",
-    "        saliency = torch.sqrt(torch.mean(data_var.grad**2,1))\n",
-    "        # #print(\"saliency shape\", saliency.shape)\n",
-    "        # #print(\"data01 shape\", data01.shape)\n",
-    "        data_mix, label_mix = sagemix.mix(data01, label01, saliency[:split_idx,:], mixing_idx = 0)\n",
-    "\n",
-    "        label2_onehot = torch.zeros(label2.shape[0], num_class).to(device).scatter(1, label2.view(-1, 1), 1)\n",
-    "        # #print(\"label2_onehot shape\", label2_onehot.shape)\n",
-    "        # #print(\"label_mix shape\", label_mix.shape)\n",
-    "        # label2_perm_onehot = label2_onehot[idxs]\n",
-    "        # label = target[:, 0, None] * label_onehot + target[:, 1, None] * label_perm_onehot\n",
-    "        # #print(\"data_mix shape\", data_mix.shape)\n",
-    "        # #print(\"data2 shape\", data2.shape)\n",
-    "        # data_all = interleave(data_mix, data2)\n",
-    "        data_all = torch.cat((data_mix, data2), dim=0)\n",
-    "        # #print(\"data_all shape\", data_all.shape)\n",
-    "        # label_all = interleave(label_mix, label2_onehot)\n",
-    "        label_all = torch.cat((label_mix, label2_onehot), dim=0)\n",
-    "\n",
-    "        data_var = Variable(data_mix.permute(0,2,1), requires_grad=True)\n",
-    "        logits = model(data_var)\n",
-    "        loss_mix = criterion(logits, label_mix)\n",
-    "        loss_mix.backward()\n",
-    "        opt.zero_grad()\n",
-    "        saliency_mix = torch.sqrt(torch.mean(data_var.grad**2,1))\n",
-    "\n",
-    "        \n",
-    "\n",
-    "        # saliency_all = interleave(saliency_mix, saliency[split_idx:, :])\n",
-    "        saliency_all = torch.cat((saliency_mix, saliency[split_idx:,:]), dim=0)\n",
-    "\n",
-    "        data_total_mix, label_total_mix = sagemix.mix(data_all, label_all, saliency_all, mixing_idx=1)\n",
-    "        # #print(saliency_all[0,:])\n",
-    "        # #print(saliency_all[25,:])\n",
-    "        # #print(\"saliency_all shape\", saliency_all.shape)\n",
-    "        # break\n",
-    "\n",
-    "        # data_allmix, label_allmix = sagemix.mix(data_all, label_, saliency)\n",
-    "        # #print(\"label_all shape\", label_all.shape)\n",
-    "        \n",
-    "        # mixed_saliency = torch.sqrt(torch.mean(data_var.grad**2,1))\n",
-    "        # #print(\"data shape\", data.shape)\n",
-    "        # model.train()\n",
-    "        # break\n",
-    "                \n",
-    "            \n",
-    "        # data3, label3 = sagemix.mix(data2, label2, saliency2, mixing_idx=1)\n",
-    "\n",
-    "        \n",
-    "        # mixed_saliency = torch.sqrt(torch.mean(data_var.grad**2,1))\n",
-    "        # #print(\"data shape\", data.shape)\n",
-    "        model.train()\n",
-    "        # # break\n",
-    "            \n",
-    "        opt.zero_grad()\n",
-    "        # opt.zero_grad()\n",
-    "        logits = model(data_total_mix.permute(0,2,1))\n",
-    "        loss = criterion(logits, label_total_mix)\n",
-    "        loss.backward()\n",
-    "        opt.step()\n",
-    "        preds = logits.max(dim=1)[1]\n",
-    "        count += batch_size\n",
-    "        train_loss += loss.item() * batch_size\n",
-    "        # logits3 = model(data3.permute(0,2,1))\n",
-    "        # loss3 = criterion(logits3, label3)\n",
-    "        # loss3.backward()\n",
-    "        # opt.step()\n",
-    "        # preds = logits3.max(dim=1)[1]\n",
-    "        # count += batch_size\n",
-    "        # train_loss += loss3.item() * batch_size\n",
-    "        \n",
-    "    scheduler.step()\n",
-    "    outstr = 'Train %d, loss: %.6f' % (epoch, train_loss*1.0/count)\n",
-    "    io.cprint(outstr)\n",
-    "\n",
-    "    ####################\n",
-    "    # Test\n",
-    "    ####################\n",
-    "    test_loss = 0.0\n",
-    "    count = 0.0\n",
-    "    model.eval()\n",
-    "    test_pred = []\n",
-    "    test_true = []\n",
-    "    for data, label in tqdm(test_loader):\n",
-    "        data, label = data.to(device), label.to(device).squeeze()\n",
-    "        data = data.permute(0, 2, 1)\n",
-    "        batch_size = data.size()[0]\n",
-    "        logits = model(data)\n",
-    "        loss = cal_loss(logits, label)\n",
-    "        preds = logits.max(dim=1)[1]\n",
-    "        count += batch_size\n",
-    "        test_loss += loss.item() * batch_size\n",
-    "        test_true.append(label.cpu().numpy())\n",
-    "        test_pred.append(preds.detach().cpu().numpy())\n",
-    "    test_true = np.concatenate(test_true)\n",
-    "    test_pred = np.concatenate(test_pred)\n",
-    "    test_acc = metrics.accuracy_score(test_true, test_pred)\n",
-    "    avg_per_class_acc = metrics.balanced_accuracy_score(test_true, test_pred)\n",
-    "    if test_acc >= best_test_acc:\n",
-    "        best_test_acc = test_acc\n",
-    "        torch.save(model.state_dict(), 'checkpoints/%s/models/model.t7' % args.exp_name)\n",
-    "    outstr = 'Test %d, loss: %.6f, test acc: %.6f, test avg acc: %.6f, best test acc: %.6f' % (epoch,\n",
-    "                                                                            test_loss*1.0/count,\n",
-    "                                                                            test_acc,\n",
-    "                                                                            avg_per_class_acc,\n",
-    "                                                                            best_test_acc)\n",
-    "    io.cprint(outstr)\n",
-    "    \n",
-    "\n",
-    "\n",
-    "\n",
-    "\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [
-    {
-     "name": "stdout",
-     "output_type": "stream",
-     "text": [
-      "a tensor([[[-0.1125, -0.0414, -0.3752],\n",
-      "         [-1.3032, -0.2158, -1.2051],\n",
-      "         [-0.5357,  1.5383,  0.3800],\n",
-      "         ...,\n",
-      "         [-0.3512,  0.4020, -1.1674],\n",
-      "         [ 1.1971,  0.3080,  0.6691],\n",
-      "         [ 0.0381, -0.2588,  1.0040]],\n",
-      "\n",
-      "        [[-0.3294,  0.4150, -1.1194],\n",
-      "         [-0.0286,  1.3804,  1.0462],\n",
-      "         [ 0.5630,  1.0149,  0.7656],\n",
-      "         ...,\n",
-      "         [ 0.3430,  0.1150,  0.9111],\n",
-      "         [-0.1814,  0.0393,  0.1343],\n",
-      "         [ 1.1760, -0.5602, -1.4493]],\n",
-      "\n",
-      "        [[-1.0897, -1.0384,  1.3633],\n",
-      "         [ 0.6443, -1.3132, -0.6551],\n",
-      "         [ 0.4677, -0.4813, -0.2373],\n",
-      "         ...,\n",
-      "         [-0.2463, -0.4392,  1.3484],\n",
-      "         [ 0.3834, -1.0055,  0.0197],\n",
-      "         [ 0.0544, -1.0365, -0.4156]],\n",
-      "\n",
-      "        ...,\n",
-      "\n",
-      "        [[ 0.5194,  1.4834,  0.7339],\n",
-      "         [ 0.4470, -1.4777, -0.3954],\n",
-      "         [ 0.9724,  2.6624,  1.5264],\n",
-      "         ...,\n",
-      "         [ 2.2803,  0.2474,  1.4016],\n",
-      "         [-0.4626,  0.1937,  0.4863],\n",
-      "         [-2.1015, -1.3753, -0.6788]],\n",
-      "\n",
-      "        [[-0.7733,  0.7350,  1.7130],\n",
-      "         [-1.2992, -1.2994, -0.0560],\n",
-      "         [-2.2585, -1.1929,  1.1539],\n",
-      "         ...,\n",
-      "         [-0.9960, -0.8323, -0.1977],\n",
-      "         [ 1.1272, -0.5497,  0.7854],\n",
-      "         [-0.4735,  0.8044,  0.1353]],\n",
-      "\n",
-      "        [[ 0.2649, -1.1486,  1.4098],\n",
-      "         [ 0.0075, -0.3781,  0.7444],\n",
-      "         [ 0.8211, -1.2673,  1.5602],\n",
-      "         ...,\n",
-      "         [ 1.4296,  0.6711,  0.5630],\n",
-      "         [ 0.1157,  0.2024, -1.4549],\n",
-      "         [-0.3347,  0.2286, -0.3120]]]) b tensor([[[-2.0388e+00, -1.2987e+00, -1.6129e+00],\n",
-      "         [ 8.2557e-01,  1.7312e+00, -3.3603e-01],\n",
-      "         [ 1.1273e+00, -4.4467e-01,  1.6428e+00],\n",
-      "         ...,\n",
-      "         [-8.6051e-01,  2.3040e-01, -1.0953e+00],\n",
-      "         [ 2.1171e+00,  3.9374e-02,  1.4220e+00],\n",
-      "         [ 2.5551e-01,  6.0264e-01,  1.8454e+00]],\n",
-      "\n",
-      "        [[ 1.7747e+00, -1.0619e-01,  5.9995e-03],\n",
-      "         [ 1.1275e+00,  1.2898e+00, -1.3031e+00],\n",
-      "         [ 2.3486e+00, -2.6514e-01,  9.4050e-01],\n",
-      "         ...,\n",
-      "         [-4.1894e-01,  8.0496e-02,  8.0428e-01],\n",
-      "         [-2.5055e-01,  3.0229e-01,  4.0814e-02],\n",
-      "         [-8.8205e-01,  1.7702e+00, -1.1740e+00]],\n",
-      "\n",
-      "        [[ 8.3954e-01, -1.4185e-01, -1.3251e+00],\n",
-      "         [-3.0738e-01, -2.5744e+00,  1.2740e+00],\n",
-      "         [-5.0374e-01,  1.2475e+00,  6.6498e-04],\n",
-      "         ...,\n",
-      "         [ 1.4864e+00,  1.3209e+00, -2.4666e-01],\n",
-      "         [ 5.1911e-01,  1.2291e-01, -1.0825e+00],\n",
-      "         [ 1.1395e-01, -8.2489e-01,  1.2208e+00]],\n",
-      "\n",
-      "        ...,\n",
-      "\n",
-      "        [[ 6.1808e-01, -1.9606e-01, -3.9269e-01],\n",
-      "         [ 2.1225e+00,  5.1824e-01, -9.0890e-02],\n",
-      "         [-2.6418e-01,  5.0990e-01,  1.4545e+00],\n",
-      "         ...,\n",
-      "         [ 2.6017e-01, -4.2099e-01, -4.1746e-01],\n",
-      "         [-3.1737e-01,  1.0912e+00, -2.4880e-01],\n",
-      "         [ 9.0149e-01,  5.6007e-01,  4.0170e-01]],\n",
-      "\n",
-      "        [[-6.4119e-01,  7.4286e-01,  4.3632e-01],\n",
-      "         [ 1.4904e+00,  1.0373e+00, -1.7885e+00],\n",
-      "         [ 1.5152e-01,  1.5377e+00,  2.4643e-01],\n",
-      "         ...,\n",
-      "         [ 1.8265e+00,  3.7856e-01, -5.2078e-01],\n",
-      "         [ 6.7734e-01,  8.7570e-01,  1.9113e-01],\n",
-      "         [-1.9972e-01, -5.6300e-01, -3.1147e-01]],\n",
-      "\n",
-      "        [[-1.1403e-01,  4.6729e-01,  8.0612e-01],\n",
-      "         [ 1.0146e+00, -2.0038e-01, -1.4679e+00],\n",
-      "         [-1.1752e+00, -2.5551e-01, -6.1144e-01],\n",
-      "         ...,\n",
-      "         [ 2.1057e+00, -7.6955e-01,  1.5164e+00],\n",
-      "         [ 8.6958e-01,  1.2370e+00,  1.3119e+00],\n",
-      "         [-7.9373e-01, -7.9147e-01, -5.7936e-01]]]) c tensor([[[-0.1125, -0.0414, -0.3752],\n",
-      "         [-1.3032, -0.2158, -1.2051],\n",
-      "         [-0.5357,  1.5383,  0.3800],\n",
-      "         ...,\n",
-      "         [-0.3512,  0.4020, -1.1674],\n",
-      "         [ 1.1971,  0.3080,  0.6691],\n",
-      "         [ 0.0381, -0.2588,  1.0040]],\n",
-      "\n",
-      "        [[-2.0388, -1.2987, -1.6129],\n",
-      "         [ 0.8256,  1.7312, -0.3360],\n",
-      "         [ 1.1273, -0.4447,  1.6428],\n",
-      "         ...,\n",
-      "         [-0.8605,  0.2304, -1.0953],\n",
-      "         [ 2.1171,  0.0394,  1.4220],\n",
-      "         [ 0.2555,  0.6026,  1.8454]],\n",
-      "\n",
-      "        [[-0.3294,  0.4150, -1.1194],\n",
-      "         [-0.0286,  1.3804,  1.0462],\n",
-      "         [ 0.5630,  1.0149,  0.7656],\n",
-      "         ...,\n",
-      "         [ 0.3430,  0.1150,  0.9111],\n",
-      "         [-0.1814,  0.0393,  0.1343],\n",
-      "         [ 1.1760, -0.5602, -1.4493]],\n",
-      "\n",
-      "        ...,\n",
-      "\n",
-      "        [[-0.6412,  0.7429,  0.4363],\n",
-      "         [ 1.4904,  1.0373, -1.7885],\n",
-      "         [ 0.1515,  1.5377,  0.2464],\n",
-      "         ...,\n",
-      "         [ 1.8265,  0.3786, -0.5208],\n",
-      "         [ 0.6773,  0.8757,  0.1911],\n",
-      "         [-0.1997, -0.5630, -0.3115]],\n",
-      "\n",
-      "        [[ 0.2649, -1.1486,  1.4098],\n",
-      "         [ 0.0075, -0.3781,  0.7444],\n",
-      "         [ 0.8211, -1.2673,  1.5602],\n",
-      "         ...,\n",
-      "         [ 1.4296,  0.6711,  0.5630],\n",
-      "         [ 0.1157,  0.2024, -1.4549],\n",
-      "         [-0.3347,  0.2286, -0.3120]],\n",
-      "\n",
-      "        [[-0.1140,  0.4673,  0.8061],\n",
-      "         [ 1.0146, -0.2004, -1.4679],\n",
-      "         [-1.1752, -0.2555, -0.6114],\n",
-      "         ...,\n",
-      "         [ 2.1057, -0.7696,  1.5164],\n",
-      "         [ 0.8696,  1.2370,  1.3119],\n",
-      "         [-0.7937, -0.7915, -0.5794]]])\n"
-     ]
-    }
-   ],
-   "source": [
-    "\n",
-    "\n",
-    "\n",
-    "import torch\n",
-    "\n",
-    "def interleave_tensors(a, b):\n",
-    "    # Check that a and b have the same shape\n",
-    "    assert a.shape == b.shape, \"Tensors must have the same shape\"\n",
-    "    \n",
-    "    # Expand dimensions\n",
-    "    a = a.unsqueeze(1)\n",
-    "    b = b.unsqueeze(1)\n",
-    "\n",
-    "    # Concatenate tensors\n",
-    "    c = torch.cat((a, b), dim=1)\n",
-    "\n",
-    "    # Reshape tensor\n",
-    "    c = c.view(-1, *a.shape[2:])\n",
-    "\n",
-    "    return c\n",
-    "\n",
-    "# Test the function\n",
-    "a = torch.randn(10, 1024, 3)\n",
-    "b = torch.randn(10, 1024, 3)\n",
-    "\n",
-    "c = interleave_tensors(a, b)\n",
-    "\n",
-    "#print(\"a\", a, \"b\", b, \"c\", c)  # Should #print: torch.Size([20, 1024, 3])\n"
-   ]
-  },
-  {
-   "cell_type": "code",
-   "execution_count": null,
-   "metadata": {},
-   "outputs": [],
-   "source": []
-  }
- ],
- "metadata": {
-  "kernelspec": {
-   "display_name": "mixit",
-   "language": "python",
-   "name": "python3"
-  },
-  "language_info": {
-   "codemirror_mode": {
-    "name": "ipython",
-    "version": 3
-   },
-   "file_extension": ".py",
-   "mimetype": "text/x-python",
-   "name": "python",
-   "nbconvert_exporter": "python",
-   "pygments_lexer": "ipython3",
-   "version": "3.8.16"
-  },
-  "orig_nbformat": 4
- },
- "nbformat": 4,
- "nbformat_minor": 2
-}
+)
+
+for epoch in range(args.epochs):
+
+    ####################
+    # Train
+    ####################
+    train_loss = 0.0
+    count = 0.0
+    model.train()
+    train_pred = []
+    train_true = []
+    for data, label in tqdm(train_loader):
+        data, label = data.to(device), label.to(device).squeeze()
+        # #print("data shape", data)
+        batch_size = data.size()[0]
+        split_idx = int(batch_size * 1/2)
+        data01 = data[:split_idx, :, :]
+        label01 = label[:split_idx]
+        data2 = data[split_idx:, :, :]
+        label2 = label[split_idx:]
+        
+        ####################
+        # generate augmented sample
+        ####################
+        model.eval()
+        data_var = Variable(data.permute(0,2,1), requires_grad=True)
+        logits = model(data_var)
+        loss = cal_loss(logits, label, smoothing=False)
+        loss.backward()
+        opt.zero_grad()
+        saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
+        # #print("saliency shape", saliency.shape)
+        # #print("data01 shape", data01.shape)
+        data_mix, label_mix = sagemix.mix(data01, label01, saliency[:split_idx,:], mixing_idx = 0)
+
+        label2_onehot = torch.zeros(label2.shape[0], num_class).to(device).scatter(1, label2.view(-1, 1), 1)
+        # #print("label2_onehot shape", label2_onehot.shape)
+        # #print("label_mix shape", label_mix.shape)
+        # label2_perm_onehot = label2_onehot[idxs]
+        # label = target[:, 0, None] * label_onehot + target[:, 1, None] * label_perm_onehot
+        # #print("data_mix shape", data_mix.shape)
+        # #print("data2 shape", data2.shape)
+        # data_all = interleave(data_mix, data2)
+        data_all = torch.cat((data_mix, data2), dim=0)
+        # #print("data_all shape", data_all.shape)
+        # label_all = interleave(label_mix, label2_onehot)
+        label_all = torch.cat((label_mix, label2_onehot), dim=0)
+
+        data_var = Variable(data_mix.permute(0,2,1), requires_grad=True)
+        logits = model(data_var)
+        loss_mix = criterion(logits, label_mix)
+        loss_mix.backward()
+        opt.zero_grad()
+        saliency_mix = torch.sqrt(torch.mean(data_var.grad**2,1))
+
+        
+
+        # saliency_all = interleave(saliency_mix, saliency[split_idx:, :])
+        saliency_all = torch.cat((saliency_mix, saliency[split_idx:,:]), dim=0)
+
+        data_total_mix, label_total_mix = sagemix.mix(data_all, label_all, saliency_all, mixing_idx=1)
+        
+        model.train()
+        # # break
+            
+        opt.zero_grad()
+        # opt.zero_grad()
+        logits = model(data_total_mix.permute(0,2,1))
+        loss = criterion(logits, label_total_mix)
+        loss.backward()
+        opt.step()
+        preds = logits.max(dim=1)[1]
+        count += batch_size
+        train_loss += loss.item() * batch_size
+        # logits3 = model(data3.permute(0,2,1))
+        # loss3 = criterion(logits3, label3)
+        # loss3.backward()
+        # opt.step()
+        # preds = logits3.max(dim=1)[1]
+        # count += batch_size
+        # train_loss += loss3.item() * batch_size
+        
+    scheduler.step()
+    outstr = 'Train %d, loss: %.6f' % (epoch, train_loss*1.0/count)
+    io.cprint(outstr)
+
+    ####################
+    # Test
+    ####################
+    test_loss = 0.0
+    count = 0.0
+    model.eval()
+    test_pred = []
+    test_true = []
+    for data, label in tqdm(test_loader):
+        data, label = data.to(device), label.to(device).squeeze()
+        data = data.permute(0, 2, 1)
+        batch_size = data.size()[0]
+        logits = model(data)
+        loss = cal_loss(logits, label)
+        preds = logits.max(dim=1)[1]
+        count += batch_size
+        test_loss += loss.item() * batch_size
+        test_true.append(label.cpu().numpy())
+        test_pred.append(preds.detach().cpu().numpy())
+    test_true = np.concatenate(test_true)
+    test_pred = np.concatenate(test_pred)
+    test_acc = metrics.accuracy_score(test_true, test_pred)
+    avg_per_class_acc = metrics.balanced_accuracy_score(test_true, test_pred)
+    if test_acc >= best_test_acc:
+        best_test_acc = test_acc
+        torch.save(model.state_dict(), 'checkpoints/%s/models/model_three_point.t7' % args.exp_name)
+
+    wandb.log({
+        "loss": loss, 
+        "test_acc": test_acc,
+        "test_avg_acc": avg_per_class_acc, 
+        "best_test_acc": best_test_acc, 
+        "epoch": epoch
+    }, step=epoch)
+
+    outstr = 'Test %d, loss: %.6f, test acc: %.6f, test avg acc: %.6f, best test acc: %.6f' % (epoch,
+                                                                            test_loss*1.0/count,
+                                                                            test_acc,
+                                                                            avg_per_class_acc,
+                                                                            best_test_acc)
+    io.cprint(outstr)
+    
+
+
+
+
