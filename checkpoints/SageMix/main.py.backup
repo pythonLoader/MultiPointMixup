@@ -19,6 +19,7 @@ from SageMix import SageMix
 from data import ModelNet40, ScanObjectNN
 from model import PointNet, DGCNN
 from util import cal_loss, cal_loss_mix, IOStream
+# import io
 
 
 def _init_():
@@ -99,7 +100,7 @@ def train(args, io):
         train_true = []
         for data, label in tqdm(train_loader):
             data, label = data.to(device), label.to(device).squeeze()
-            print("data shape", data.shape)
+            # print("data shape", data.shape)
             batch_size = data.size()[0]
             
             ####################
@@ -116,7 +117,7 @@ def train(args, io):
 
             
             mixed_saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
-            print("data shape", data.shape)
+            # print("data shape", data.shape)
             model.train()
             # break
                 

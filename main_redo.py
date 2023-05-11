@@ -13,12 +13,176 @@ from torch.optim.lr_scheduler import CosineAnnealingLR
 from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from tqdm import tqdm
+from emd_ import emd_module
 
 
-from SageMix import SageMix
+# from SageMix import SageMix
 from data import ModelNet40, ScanObjectNN
 from model import PointNet, DGCNN
 from util import cal_loss, cal_loss_mix, IOStream
+# import io
+
+class SageMix:
+    def __init__(self, args, num_class=40):
+        self.num_class = num_class
+        self.EMD = emd_module.emdModule()
+        self.sigma = args.sigma
+        self.beta = torch.distributions.beta.Beta(torch.tensor([args.theta]), torch.tensor([args.theta]))
+        self.beta2 = torch.distributions.beta.Beta(torch.tensor([2*args.theta]), torch.tensor([args.theta]))
+
+    
+    def mix(self, xyz, label, saliency=None, mixing_idx=0, device='cuda:0'):
+        """
+        Args:
+            xyz (B,N,3)
+            label (B)
+            saliency (B,N): Defaults to None.
+        """        
+        # #print("xyz shape", xyz.shape)
+        B, N, _ = xyz.shape
+        if mixing_idx == 0:
+            idxs = torch.randperm(B)
+
+            # #print(xyz)
+            
+            #Optimal assignment in Eq.(3)
+            perm = xyz[idxs]
+            
+            _, ass = self.EMD(xyz, perm, 0.005, 500) # mapping
+            ass = ass.long()
+            # #print(ass)
+            perm_new = torch.zeros_like(perm).to(device)#.cuda()
+            perm_saliency = torch.zeros_like(saliency).to(device)#.cuda()
+            
+            # #print(ass,ass.shape)
+            for i in range(B):
+                perm_new[i] = perm[i][ass[i]]
+                # #print(idxs)
+                # #print(ass)
+                # #print(saliency)
+                # #print("idxs shape", idxs.shape)
+                # #print("ass shape", ass.shape)
+                # #print("saliency shape", saliency.shape)
+                perm_saliency[i] = saliency[idxs][i][ass[i]]
+            
+            #####
+            # Saliency-guided sequential sampling
+            #####
+            #Eq.(4) in the main paper
+            saliency = saliency/saliency.sum(-1, keepdim=True)
+            anc_idx = torch.multinomial(saliency, 1, replacement=True)
+            anchor_ori = xyz[torch.arange(B), anc_idx[:,0]]
+            
+            #cal distance and reweighting saliency map for Eq.(5) in the main paper
+            sub = perm_new - anchor_ori[:,None,:]
+            dist = ((sub) ** 2).sum(2).sqrt()
+            perm_saliency = perm_saliency * dist
+            perm_saliency = perm_saliency/perm_saliency.sum(-1, keepdim=True)
+            
+            #Eq.(5) in the main paper
+            anc_idx2 = torch.multinomial(perm_saliency, 1, replacement=True)
+            anchor_perm = perm_new[torch.arange(B),anc_idx2[:,0]]
+                    
+                    
+            #####
+            # Shape-preserving continuous Mixup
+            #####
+            alpha = self.beta.sample((B,)).to(device)#.cuda()
+            sub_ori = xyz - anchor_ori[:,None,:]
+            sub_ori = ((sub_ori) ** 2).sum(2).sqrt()
+            #Eq.(6) for first sample
+            ker_weight_ori = torch.exp(-0.5 * (sub_ori ** 2) / (self.sigma ** 2))  #(M,N)
+            
+            sub_perm = perm_new - anchor_perm[:,None,:]
+            sub_perm = ((sub_perm) ** 2).sum(2).sqrt()
+            #Eq.(6) for second sample
+            ker_weight_perm = torch.exp(-0.5 * (sub_perm ** 2) / (self.sigma ** 2))  #(M,N)
+            
+            #Eq.(9)
+            weight_ori = ker_weight_ori * alpha 
+            weight_perm = ker_weight_perm * (1-alpha)
+            weight = (torch.cat([weight_ori[...,None],weight_perm[...,None]],-1)) + 1e-16
+            weight = weight/weight.sum(-1)[...,None]
+
+            #Eq.(8) for new sample
+            x = weight[:,:,0:1] * xyz + weight[:,:,1:] * perm_new
+            
+            #Eq.(8) for new label
+            target = weight.sum(1)
+            target = target / target.sum(-1, keepdim=True)
+            
+            label_onehot = torch.zeros(B, self.num_class).to(device).scatter(1, label.view(-1, 1), 1)
+            label_perm_onehot = label_onehot[idxs]
+            label = target[:, 0, None] * label_onehot + target[:, 1, None] * label_perm_onehot
+            return x, label
+        
+        else:
+            # #print("xyz shape mixing 1", xyz.shape)
+            B, N, _ = xyz.shape
+            split_idx = int(B/2)
+            # #print("split_idx", split_idx)
+            # #print("saliency shape", saliency.shape)
+
+            xyz1 = xyz[:split_idx]
+            xyz2 = xyz[split_idx:]
+            label1 = label[:split_idx]
+            label2 = label[split_idx:]
+            saliency1 = saliency[:split_idx]
+            saliency2 = saliency[split_idx:]
+
+            _, ass = self.EMD(xyz1, xyz2, 0.005, 500) # mapping
+            ass = ass.long()
+
+            #####
+            # Saliency-guided sequential sampling
+            #####
+            #Eq.(4) in the main paper
+            saliency1 = saliency1/saliency1.sum(-1, keepdim=True)
+            anc_idx = torch.multinomial(saliency1, 1, replacement=True)
+            anchor_ori = xyz1[torch.arange(split_idx), anc_idx[:,0]]
+
+            #cal distance and reweighting saliency map for Eq.(5) in the main paper
+            sub = xyz2 - anchor_ori[:,None,:]
+            dist = ((sub) ** 2).sum(2).sqrt()
+            # #print("saliency2 shape", saliency2.shape)
+            # #print("dist shape", dist.shape)
+            saliency2 = saliency2 * dist
+            saliency2 = saliency2/saliency2.sum(-1, keepdim=True)
+            
+            #Eq.(5) in the main paper
+            anc_idx2 = torch.multinomial(saliency2, 1, replacement=True)
+            anchor_2 = xyz2[torch.arange(split_idx),anc_idx2[:,0]]
+
+            alpha = self.beta.sample((split_idx,)).to(device)#.cuda()
+            sub_ori = xyz1 - anchor_ori[:,None,:]
+            sub_ori = ((sub_ori) ** 2).sum(2).sqrt()
+            #Eq.(6) for first sample
+            ker_weight_ori = torch.exp(-0.5 * (sub_ori ** 2) / (self.sigma ** 2))  #(M,N)
+
+            # #print("anchor_2 shape", anchor_2.shape)
+            sub_perm = xyz2 - anchor_2[:,None,:]
+            sub_perm = ((sub_perm) ** 2).sum(2).sqrt()
+            #Eq.(6) for second sample
+            ker_weight_perm = torch.exp(-0.5 * (sub_perm ** 2) / (self.sigma ** 2))  #(M,N)
+
+            #Eq.(9)
+            weight_ori = ker_weight_ori * alpha
+            weight_perm = ker_weight_perm * (1-alpha)
+            weight = (torch.cat([weight_ori[...,None],weight_perm[...,None]],-1)) + 1e-16
+            weight = weight/weight.sum(-1)[...,None]
+
+            #Eq.(8) for new sample
+            x = weight[:,:,0:1] * xyz1 + weight[:,:,1:] * xyz2
+
+            #Eq.(8) for new label
+            target = weight.sum(1)
+            target = target / target.sum(-1, keepdim=True)
+
+            label = target[:, 0, None] * label1 + target[:, 1, None] * label2
+
+
+
+            return x, label
 
 
 def _init_():
@@ -99,8 +263,13 @@ def train(args, io):
         train_true = []
         for data, label in tqdm(train_loader):
             data, label = data.to(device), label.to(device).squeeze()
-            print("data shape", data.shape)
+            # #print("data shape", data)
             batch_size = data.size()[0]
+            split_idx = int(batch_size * 1/2)
+            data01 = data[:split_idx, :, :]
+            label01 = label[:split_idx]
+            data2 = data[split_idx:, :, :]
+            label2 = label[split_idx:]
             
             ####################
             # generate augmented sample
@@ -108,40 +277,78 @@ def train(args, io):
             model.eval()
             data_var = Variable(data.permute(0,2,1), requires_grad=True)
             logits = model(data_var)
-            print("logits shape", logits.shape)
-            print("label shape", label.shape)
             loss = cal_loss(logits, label, smoothing=False)
             loss.backward()
             opt.zero_grad()
             saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
-            data2, label2 = sagemix.mix(data, label, saliency, mixing_idx=0)
+            # #print("saliency shape", saliency.shape)
+            # #print("data01 shape", data01.shape)
+            data_mix, label_mix = sagemix.mix(data01, label01, saliency[:split_idx,:], mixing_idx = 0)
 
-            # model.eval()
-            data_var2 = Variable(data2.permute(0,2,1), requires_grad=True)
-            logits2 = model(data_var2)
-            print("logits2 shape", logits2.shape)
-            print("label2 shape", label2.shape)
-            loss2 = criterion(logits2, label2)
-            #cal_loss(logits2, label2, smoothing=False)
-            loss2.backward()
+            label2_onehot = torch.zeros(label2.shape[0], num_class).to(device).scatter(1, label2.view(-1, 1), 1)
+            # #print("label2_onehot shape", label2_onehot.shape)
+            # #print("label_mix shape", label_mix.shape)
+            # label2_perm_onehot = label2_onehot[idxs]
+            # label = target[:, 0, None] * label_onehot + target[:, 1, None] * label_perm_onehot
+            # #print("data_mix shape", data_mix.shape)
+            # #print("data2 shape", data2.shape)
+            # data_all = interleave(data_mix, data2)
+            data_all = torch.cat((data_mix, data2), dim=0)
+            # #print("data_all shape", data_all.shape)
+            # label_all = interleave(label_mix, label2_onehot)
+            label_all = torch.cat((label_mix, label2_onehot), dim=0)
+
+            data_var = Variable(data_mix.permute(0,2,1), requires_grad=True)
+            logits = model(data_var)
+            loss_mix = criterion(logits, label_mix)
+            loss_mix.backward()
             opt.zero_grad()
-            saliency2 = torch.sqrt(torch.mean(data_var2.grad**2,1))
-            data3, label3 = sagemix.mix(data2, label2, saliency2, mixing_idx=1)
+            saliency_mix = torch.sqrt(torch.mean(data_var.grad**2,1))
+
+            
+
+            # saliency_all = interleave(saliency_mix, saliency[split_idx:, :])
+            saliency_all = torch.cat((saliency_mix, saliency[split_idx:,:]), dim=0)
+
+            data_total_mix, label_total_mix = sagemix.mix(data_all, label_all, saliency_all, mixing_idx=1)
+            # #print(saliency_all[0,:])
+            # #print(saliency_all[25,:])
+            # #print("saliency_all shape", saliency_all.shape)
+            # break
+
+            # data_allmix, label_allmix = sagemix.mix(data_all, label_, saliency)
+            # #print("label_all shape", label_all.shape)
+            
+            # mixed_saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
+            # #print("data shape", data.shape)
+            # model.train()
+            # break
+                    
+                
+            # data3, label3 = sagemix.mix(data2, label2, saliency2, mixing_idx=1)
 
             
             # mixed_saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
-            # print("data shape", data.shape)
+            # #print("data shape", data.shape)
             model.train()
-            # break
+            # # break
                 
             opt.zero_grad()
-            logits3 = model(data3.permute(0,2,1))
-            loss3 = criterion(logits3, label3)
-            loss3.backward()
+            # opt.zero_grad()
+            logits = model(data_total_mix.permute(0,2,1))
+            loss = criterion(logits, label_total_mix)
+            loss.backward()
             opt.step()
-            preds = logits3.max(dim=1)[1]
+            preds = logits.max(dim=1)[1]
             count += batch_size
-            train_loss += loss3.item() * batch_size
+            train_loss += loss.item() * batch_size
+            # logits3 = model(data3.permute(0,2,1))
+            # loss3 = criterion(logits3, label3)
+            # loss3.backward()
+            # opt.step()
+            # preds = logits3.max(dim=1)[1]
+            # count += batch_size
+            # train_loss += loss3.item() * batch_size
             
         scheduler.step()
         outstr = 'Train %d, loss: %.6f' % (epoch, train_loss*1.0/count)
