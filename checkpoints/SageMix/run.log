@@ -611,3 +611,353 @@ Train 48, loss: 1.491270
 Test 48, loss: 2.114805, test acc: 0.847650, test avg acc: 0.782849, best test acc: 0.853323
 Train 49, loss: 1.500955
 Test 49, loss: 2.107510, test acc: 0.842788, test avg acc: 0.777605, best test acc: 0.853323
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Train 0, loss: 2.867210
+Test 0, loss: 2.648160, test acc: 0.474068, test avg acc: 0.349471, best test acc: 0.474068
+Train 1, loss: 2.457289
+Test 1, loss: 2.514556, test acc: 0.542139, test avg acc: 0.441151, best test acc: 0.542139
+Train 2, loss: 2.297705
+Test 2, loss: 2.507531, test acc: 0.558347, test avg acc: 0.467837, best test acc: 0.558347
+Train 3, loss: 2.213134
+Test 3, loss: 2.357819, test acc: 0.610211, test avg acc: 0.506384, best test acc: 0.610211
+Train 4, loss: 2.096991
+Test 4, loss: 2.254101, test acc: 0.666937, test avg acc: 0.565233, best test acc: 0.666937
+Train 5, loss: 2.034532
+Test 5, loss: 2.322148, test acc: 0.657618, test avg acc: 0.579552, best test acc: 0.666937
+Train 6, loss: 1.984779
+Test 6, loss: 2.301496, test acc: 0.705835, test avg acc: 0.610494, best test acc: 0.705835
+Train 7, loss: 1.914555
+Test 7, loss: 2.217365, test acc: 0.713533, test avg acc: 0.604250, best test acc: 0.713533
+Train 8, loss: 1.929901
+Test 8, loss: 2.210704, test acc: 0.719611, test avg acc: 0.620913, best test acc: 0.719611
+Train 9, loss: 1.881256
+Test 9, loss: 2.210621, test acc: 0.742301, test avg acc: 0.652419, best test acc: 0.742301
+Train 10, loss: 1.851873
+Test 10, loss: 2.154811, test acc: 0.744327, test avg acc: 0.649238, best test acc: 0.744327
+Train 11, loss: 1.856174
+Test 11, loss: 2.098588, test acc: 0.750000, test avg acc: 0.666494, best test acc: 0.750000
+Train 12, loss: 1.819440
+Test 12, loss: 2.109165, test acc: 0.752836, test avg acc: 0.675506, best test acc: 0.752836
+Train 13, loss: 1.802917
+Test 13, loss: 2.228350, test acc: 0.739465, test avg acc: 0.662047, best test acc: 0.752836
+Train 14, loss: 1.777952
+Test 14, loss: 2.168589, test acc: 0.766613, test avg acc: 0.673919, best test acc: 0.766613
+Train 15, loss: 1.760901
+Test 15, loss: 2.145108, test acc: 0.779579, test avg acc: 0.657564, best test acc: 0.779579
+Train 16, loss: 1.751040
+Test 16, loss: 2.194280, test acc: 0.730146, test avg acc: 0.631547, best test acc: 0.779579
+Train 17, loss: 1.727869
+Test 17, loss: 2.122710, test acc: 0.779173, test avg acc: 0.682640, best test acc: 0.779579
+Train 18, loss: 1.724424
+Test 18, loss: 2.116439, test acc: 0.784441, test avg acc: 0.694128, best test acc: 0.784441
+Train 19, loss: 1.750654
+Test 19, loss: 2.065944, test acc: 0.773096, test avg acc: 0.692169, best test acc: 0.784441
+Train 20, loss: 1.677766
+Test 20, loss: 2.112385, test acc: 0.778363, test avg acc: 0.675151, best test acc: 0.784441
+Train 21, loss: 1.722601
+Test 21, loss: 2.108023, test acc: 0.794165, test avg acc: 0.700378, best test acc: 0.794165
+Train 22, loss: 1.678352
+Test 22, loss: 2.111992, test acc: 0.792139, test avg acc: 0.709593, best test acc: 0.794165
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=True)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=20, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=30, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=100, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Namespace(batch_size=40, data='MN40', dropout=0.5, emb_dims=1024, epochs=100, eval=False, exp_name='SageMix', k=20, lr=0.0001, model='pointnet', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=-1, test_batch_size=16, theta=0.2, use_sgd=False)
+Train 0, loss: 2.859791
+Test 0, loss: 2.548346, test acc: 0.427877, test avg acc: 0.298401, best test acc: 0.427877
+Train 1, loss: 2.414768
+Test 1, loss: 2.349001, test acc: 0.538898, test avg acc: 0.396733, best test acc: 0.538898
+Train 2, loss: 2.279542
+Test 2, loss: 2.209557, test acc: 0.649109, test avg acc: 0.507936, best test acc: 0.649109
+Train 3, loss: 2.176610
+Test 3, loss: 2.164508, test acc: 0.660454, test avg acc: 0.518372, best test acc: 0.660454
+Train 4, loss: 2.140791
+Test 4, loss: 2.125933, test acc: 0.715559, test avg acc: 0.569791, best test acc: 0.715559
+Train 5, loss: 2.088581
+Test 5, loss: 2.131038, test acc: 0.709887, test avg acc: 0.580849, best test acc: 0.715559
+Train 6, loss: 2.050734
+Test 6, loss: 2.139257, test acc: 0.709076, test avg acc: 0.576483, best test acc: 0.715559
+Train 7, loss: 1.986109
+Test 7, loss: 2.088690, test acc: 0.730146, test avg acc: 0.595384, best test acc: 0.730146
+Train 8, loss: 1.972487
+Test 8, loss: 2.046229, test acc: 0.753647, test avg acc: 0.645872, best test acc: 0.753647
+Train 9, loss: 1.970111
+Test 9, loss: 2.070453, test acc: 0.743922, test avg acc: 0.641849, best test acc: 0.753647
+Train 10, loss: 1.937551
+Test 10, loss: 2.119998, test acc: 0.718801, test avg acc: 0.616093, best test acc: 0.753647
+Train 11, loss: 1.920469
+Test 11, loss: 2.084951, test acc: 0.745948, test avg acc: 0.640477, best test acc: 0.753647
+Train 12, loss: 1.888029
+Test 12, loss: 2.047750, test acc: 0.777958, test avg acc: 0.675936, best test acc: 0.777958
+Train 13, loss: 1.887159
+Test 13, loss: 2.120250, test acc: 0.747569, test avg acc: 0.661965, best test acc: 0.777958
+Train 14, loss: 1.840544
+Test 14, loss: 2.067709, test acc: 0.770665, test avg acc: 0.684692, best test acc: 0.777958
+Train 15, loss: 1.846674
+Test 15, loss: 2.069075, test acc: 0.771475, test avg acc: 0.687221, best test acc: 0.777958
+Train 16, loss: 1.849562
+Test 16, loss: 2.093953, test acc: 0.782010, test avg acc: 0.696703, best test acc: 0.782010
+Train 17, loss: 1.809163
+Test 17, loss: 2.063433, test acc: 0.793355, test avg acc: 0.699924, best test acc: 0.793355
+Train 18, loss: 1.816984
+Test 18, loss: 2.045645, test acc: 0.775527, test avg acc: 0.696948, best test acc: 0.793355
+Train 19, loss: 1.793199
+Test 19, loss: 2.019950, test acc: 0.797812, test avg acc: 0.721785, best test acc: 0.797812
+Train 20, loss: 1.795662
+Test 20, loss: 2.025894, test acc: 0.805916, test avg acc: 0.710047, best test acc: 0.805916
+Train 21, loss: 1.803369
+Test 21, loss: 2.007989, test acc: 0.805105, test avg acc: 0.724919, best test acc: 0.805916
+Train 22, loss: 1.751601
+Test 22, loss: 2.058818, test acc: 0.794976, test avg acc: 0.723360, best test acc: 0.805916
+Train 23, loss: 1.795679
+Test 23, loss: 2.032803, test acc: 0.794976, test avg acc: 0.718035, best test acc: 0.805916
+Train 24, loss: 1.772426
+Test 24, loss: 2.041900, test acc: 0.805511, test avg acc: 0.722890, best test acc: 0.805916
+Train 25, loss: 1.766235
+Test 25, loss: 2.050632, test acc: 0.789708, test avg acc: 0.715209, best test acc: 0.805916
+Train 26, loss: 1.755515
+Test 26, loss: 2.077014, test acc: 0.804295, test avg acc: 0.712994, best test acc: 0.805916
+Train 27, loss: 1.782801
+Test 27, loss: 2.050577, test acc: 0.815235, test avg acc: 0.747628, best test acc: 0.815235
+Train 28, loss: 1.758276
+Test 28, loss: 2.125749, test acc: 0.793355, test avg acc: 0.717419, best test acc: 0.815235
+Train 29, loss: 1.757573
+Test 29, loss: 2.086460, test acc: 0.809157, test avg acc: 0.734285, best test acc: 0.815235
+Train 30, loss: 1.731185
+Test 30, loss: 2.036152, test acc: 0.816451, test avg acc: 0.746494, best test acc: 0.816451
+Train 31, loss: 1.711334
+Test 31, loss: 2.114397, test acc: 0.809968, test avg acc: 0.740279, best test acc: 0.816451
+Train 32, loss: 1.702648
+Test 32, loss: 2.034690, test acc: 0.804700, test avg acc: 0.731983, best test acc: 0.816451
+Train 33, loss: 1.734146
+Test 33, loss: 2.051863, test acc: 0.825365, test avg acc: 0.757866, best test acc: 0.825365
+Train 34, loss: 1.748268
+Test 34, loss: 2.139306, test acc: 0.791329, test avg acc: 0.722483, best test acc: 0.825365
+Train 35, loss: 1.707689
+Test 35, loss: 2.048033, test acc: 0.812399, test avg acc: 0.746140, best test acc: 0.825365
+Train 36, loss: 1.704538
+Test 36, loss: 2.022921, test acc: 0.828201, test avg acc: 0.763279, best test acc: 0.828201
+Train 37, loss: 1.686508
+Test 37, loss: 2.131244, test acc: 0.809562, test avg acc: 0.735965, best test acc: 0.828201
+Train 38, loss: 1.701731
+Test 38, loss: 2.097297, test acc: 0.809562, test avg acc: 0.731535, best test acc: 0.828201
+Train 39, loss: 1.693316
+Test 39, loss: 2.042170, test acc: 0.828201, test avg acc: 0.762564, best test acc: 0.828201
+Train 40, loss: 1.703645
+Test 40, loss: 2.116571, test acc: 0.831848, test avg acc: 0.762349, best test acc: 0.831848
+Train 41, loss: 1.684114
+Test 41, loss: 2.029725, test acc: 0.830632, test avg acc: 0.764285, best test acc: 0.831848
+Train 42, loss: 1.698658
+Test 42, loss: 2.031229, test acc: 0.823744, test avg acc: 0.771628, best test acc: 0.831848
+Train 43, loss: 1.695343
+Test 43, loss: 2.056278, test acc: 0.833063, test avg acc: 0.758965, best test acc: 0.833063
+Train 44, loss: 1.690242
+Test 44, loss: 2.074961, test acc: 0.831848, test avg acc: 0.762372, best test acc: 0.833063
+Train 45, loss: 1.675271
+Test 45, loss: 2.132873, test acc: 0.825770, test avg acc: 0.751349, best test acc: 0.833063
+Train 46, loss: 1.680424
+Test 46, loss: 2.101350, test acc: 0.824554, test avg acc: 0.751727, best test acc: 0.833063
+Train 47, loss: 1.665730
+Test 47, loss: 2.079017, test acc: 0.831442, test avg acc: 0.766570, best test acc: 0.833063
+Train 48, loss: 1.653388
+Test 48, loss: 2.068972, test acc: 0.835089, test avg acc: 0.762930, best test acc: 0.835089
+Train 49, loss: 1.658583
+Test 49, loss: 2.083077, test acc: 0.840762, test avg acc: 0.767616, best test acc: 0.840762
+Train 50, loss: 1.666731
+Test 50, loss: 2.042937, test acc: 0.828606, test avg acc: 0.770814, best test acc: 0.840762
+Train 51, loss: 1.669357
+Test 51, loss: 2.049714, test acc: 0.826175, test avg acc: 0.761110, best test acc: 0.840762
+Train 52, loss: 1.641655
+Test 52, loss: 2.092270, test acc: 0.825365, test avg acc: 0.760942, best test acc: 0.840762
+Train 53, loss: 1.662499
+Test 53, loss: 2.071571, test acc: 0.838736, test avg acc: 0.775855, best test acc: 0.840762
+Train 54, loss: 1.668178
+Test 54, loss: 2.038341, test acc: 0.832253, test avg acc: 0.752227, best test acc: 0.840762
+Train 55, loss: 1.651069
+Test 55, loss: 2.122624, test acc: 0.825770, test avg acc: 0.755360, best test acc: 0.840762
+Train 56, loss: 1.662692
+Test 56, loss: 2.033612, test acc: 0.839141, test avg acc: 0.782686, best test acc: 0.840762
+Train 57, loss: 1.646368
+Test 57, loss: 2.040817, test acc: 0.839951, test avg acc: 0.776942, best test acc: 0.840762
+Train 58, loss: 1.676233
+Test 58, loss: 2.060898, test acc: 0.848055, test avg acc: 0.779000, best test acc: 0.848055
+Train 59, loss: 1.672609
+Test 59, loss: 2.102387, test acc: 0.840762, test avg acc: 0.786151, best test acc: 0.848055
+Train 60, loss: 1.655113
+Test 60, loss: 2.098421, test acc: 0.850081, test avg acc: 0.783442, best test acc: 0.850081
+Train 61, loss: 1.666386
+Test 61, loss: 2.002878, test acc: 0.839546, test avg acc: 0.791192, best test acc: 0.850081
+Train 62, loss: 1.640377
+Test 62, loss: 2.042104, test acc: 0.832658, test avg acc: 0.770174, best test acc: 0.850081
+Train 63, loss: 1.672194
+Test 63, loss: 2.052193, test acc: 0.850081, test avg acc: 0.793517, best test acc: 0.850081
+Train 64, loss: 1.651298
+Test 64, loss: 2.103283, test acc: 0.841572, test avg acc: 0.789105, best test acc: 0.850081
+Train 65, loss: 1.635981
+Test 65, loss: 2.105070, test acc: 0.833468, test avg acc: 0.765163, best test acc: 0.850081
+Train 66, loss: 1.633134
+Test 66, loss: 2.078587, test acc: 0.854538, test avg acc: 0.776738, best test acc: 0.854538
+Train 67, loss: 1.652494
+Test 67, loss: 2.102306, test acc: 0.837115, test avg acc: 0.770948, best test acc: 0.854538
+Train 68, loss: 1.650649
+Test 68, loss: 2.055215, test acc: 0.846434, test avg acc: 0.772128, best test acc: 0.854538
+Train 69, loss: 1.633060
+Test 69, loss: 2.064010, test acc: 0.840762, test avg acc: 0.771012, best test acc: 0.854538
+Train 70, loss: 1.646750
+Test 70, loss: 2.101296, test acc: 0.836305, test avg acc: 0.780930, best test acc: 0.854538
+Train 71, loss: 1.628500
+Test 71, loss: 2.139358, test acc: 0.844814, test avg acc: 0.777343, best test acc: 0.854538
+Train 72, loss: 1.631265
+Test 72, loss: 2.156963, test acc: 0.836710, test avg acc: 0.765826, best test acc: 0.854538
+Train 73, loss: 1.639482
+Test 73, loss: 2.083643, test acc: 0.831848, test avg acc: 0.768820, best test acc: 0.854538
+Train 74, loss: 1.639582
+Test 74, loss: 2.033653, test acc: 0.850486, test avg acc: 0.796895, best test acc: 0.854538
+Train 75, loss: 1.648438
+Test 75, loss: 2.104525, test acc: 0.823339, test avg acc: 0.776983, best test acc: 0.854538
+Train 76, loss: 1.630572
+Test 76, loss: 2.032669, test acc: 0.851702, test avg acc: 0.793558, best test acc: 0.854538
+Train 77, loss: 1.622287
+Test 77, loss: 2.096802, test acc: 0.843598, test avg acc: 0.772878, best test acc: 0.854538
+Train 78, loss: 1.616367
+Test 78, loss: 2.104553, test acc: 0.841167, test avg acc: 0.778651, best test acc: 0.854538
+Train 79, loss: 1.622100
+Test 79, loss: 2.110954, test acc: 0.847650, test avg acc: 0.774599, best test acc: 0.854538
+Train 80, loss: 1.632166
+Test 80, loss: 2.075836, test acc: 0.848865, test avg acc: 0.788773, best test acc: 0.854538
+Train 81, loss: 1.636780
+Test 81, loss: 2.016143, test acc: 0.851297, test avg acc: 0.790552, best test acc: 0.854538
+Train 82, loss: 1.634753
+Test 82, loss: 2.094829, test acc: 0.843193, test avg acc: 0.789151, best test acc: 0.854538
+Train 83, loss: 1.630368
+Test 83, loss: 2.072378, test acc: 0.847650, test avg acc: 0.794343, best test acc: 0.854538
+Train 84, loss: 1.608538
+Test 84, loss: 2.080027, test acc: 0.825365, test avg acc: 0.760797, best test acc: 0.854538
+Train 85, loss: 1.599160
+Test 85, loss: 2.041363, test acc: 0.849676, test avg acc: 0.795733, best test acc: 0.854538
+Train 86, loss: 1.601707
+Test 86, loss: 2.078441, test acc: 0.829417, test avg acc: 0.780401, best test acc: 0.854538
+Train 87, loss: 1.600839
+Test 87, loss: 2.095393, test acc: 0.845219, test avg acc: 0.786767, best test acc: 0.854538
+Train 88, loss: 1.618056
+Test 88, loss: 2.008602, test acc: 0.850486, test avg acc: 0.786634, best test acc: 0.854538
+Train 89, loss: 1.599069
+Test 89, loss: 2.072842, test acc: 0.855348, test avg acc: 0.792517, best test acc: 0.855348
+Train 90, loss: 1.610920
+Test 90, loss: 2.092741, test acc: 0.852512, test avg acc: 0.793797, best test acc: 0.855348
+Train 91, loss: 1.603268
+Test 91, loss: 2.018660, test acc: 0.844003, test avg acc: 0.785169, best test acc: 0.855348
