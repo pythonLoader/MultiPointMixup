@@ -340,49 +340,82 @@ for epoch in range(args.epochs):
     train_pred = []
     train_true = []
     
-   
-    print("epoch = {}, Hierarchical Mixup".format(epoch))
-    for data, label in tqdm(train_loader):
-        data, label = data.to(device), label.to(device).squeeze()
-        # #print("data shape", data)
-        batch_size = data.size()[0]
-        split_idx = int(batch_size * 1/2)
-        data01 = data[:split_idx, :, :]
-        label01 = label[:split_idx]
-        data2 = data[split_idx:, :, :]
-        label2 = label[split_idx:]
-        
-        ####################
-        # generate augmented sample
-        ####################
-        model.eval()
-        data_var = Variable(data.permute(0,2,1), requires_grad=True)
-        logits = model(data_var)
-        loss = cal_loss(logits, label, smoothing=False)
-        loss.backward()
-        opt.zero_grad()
-        saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
-        data_mix, label_mix = sagemix.mix(data01, label01, saliency[:split_idx,:], mixing_idx = 0)
-        label2_onehot = torch.zeros(label2.shape[0], num_class).to(device).scatter(1, label2.view(-1, 1), 1)        
-        data_all = torch.cat((data_mix, data2), dim=0)
-        label_all = torch.cat((label_mix, label2_onehot), dim=0)
-        data_var = Variable(data_mix.permute(0,2,1), requires_grad=True)
-        logits = model(data_var)
-        loss_mix = criterion(logits, label_mix)
-        loss_mix.backward()
-        opt.zero_grad()
-        saliency_mix = torch.sqrt(torch.mean(data_var.grad**2,1))
-        saliency_all = torch.cat((saliency_mix, saliency[split_idx:,:]), dim=0)
-        data_total_mix, label_total_mix = sagemix.mix(data_all, label_all, saliency_all, mixing_idx=1)
-        model.train()
-        opt.zero_grad()
-        logits = model(data_total_mix.permute(0,2,1))
-        loss = criterion(logits, label_total_mix)
-        loss.backward()
-        opt.step()
-        preds = logits.max(dim=1)[1]
-        count += batch_size
-        train_loss += loss.item() * batch_size
+    if(epoch % 2 == 0):
+        flip = not flip
+    if flip:
+        print("epoch = {}, Normal Mixup".format(epoch))
+        for data, label in tqdm(train_loader):
+            data, label = data.to(device), label.to(device).squeeze()
+            # print("data shape", data.shape)
+            batch_size = data.size()[0]
+            
+            ####################
+            # generate augmented sample
+            ####################
+            model.eval()
+            data_var = Variable(data.permute(0,2,1), requires_grad=True)
+            logits = model(data_var)
+            loss = cal_loss(logits, label, smoothing=False)
+            loss.backward()
+            opt.zero_grad()
+            saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
+            data, label = sagemix2.mix(data, label, saliency)
+            mixed_saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
+            # print("data shape", data.shape)
+            model.train()
+            # break
+                
+            opt.zero_grad()
+            logits = model(data.permute(0,2,1))
+            loss = criterion(logits, label)
+            loss.backward()
+            opt.step()
+            preds = logits.max(dim=1)[1]
+            count += batch_size
+            train_loss += loss.item() * batch_size
+    else:
+        print("epoch = {}, Hierarchical Mixup".format(epoch))
+        for data, label in tqdm(train_loader):
+            data, label = data.to(device), label.to(device).squeeze()
+            # #print("data shape", data)
+            batch_size = data.size()[0]
+            split_idx = int(batch_size * 1/2)
+            data01 = data[:split_idx, :, :]
+            label01 = label[:split_idx]
+            data2 = data[split_idx:, :, :]
+            label2 = label[split_idx:]
+            
+            ####################
+            # generate augmented sample
+            ####################
+            model.eval()
+            data_var = Variable(data.permute(0,2,1), requires_grad=True)
+            logits = model(data_var)
+            loss = cal_loss(logits, label, smoothing=False)
+            loss.backward()
+            opt.zero_grad()
+            saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
+            data_mix, label_mix = sagemix.mix(data01, label01, saliency[:split_idx,:], mixing_idx = 0)
+            label2_onehot = torch.zeros(label2.shape[0], num_class).to(device).scatter(1, label2.view(-1, 1), 1)        
+            data_all = torch.cat((data_mix, data2), dim=0)
+            label_all = torch.cat((label_mix, label2_onehot), dim=0)
+            data_var = Variable(data_mix.permute(0,2,1), requires_grad=True)
+            logits = model(data_var)
+            loss_mix = criterion(logits, label_mix)
+            loss_mix.backward()
+            opt.zero_grad()
+            saliency_mix = torch.sqrt(torch.mean(data_var.grad**2,1))
+            saliency_all = torch.cat((saliency_mix, saliency[split_idx:,:]), dim=0)
+            data_total_mix, label_total_mix = sagemix.mix(data_all, label_all, saliency_all, mixing_idx=1)
+            model.train()
+            opt.zero_grad()
+            logits = model(data_total_mix.permute(0,2,1))
+            loss = criterion(logits, label_total_mix)
+            loss.backward()
+            opt.step()
+            preds = logits.max(dim=1)[1]
+            count += batch_size
+            train_loss += loss.item() * batch_size
 
     scheduler.step()
     outstr = 'Train %d, loss: %.6f' % (epoch, train_loss*1.0/count)
@@ -413,7 +446,7 @@ for epoch in range(args.epochs):
     avg_per_class_acc = metrics.balanced_accuracy_score(test_true, test_pred)
     if test_acc >= best_test_acc:
         best_test_acc = test_acc
-        torch.save(model.state_dict(), 'checkpoints/%s/models/model_three_point.t7' % args.exp_name)
+        torch.save(model.state_dict(), 'checkpoints/%s/models/model_alternating.t7' % args.exp_name)
 
     wandb.log({
         "loss": loss, 
