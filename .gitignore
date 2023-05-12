@@ -2,6 +2,6 @@ data
 *.zip
 Co-Mixup
 .pyc
-.log
 .wandb
-wandb
+wandb/
+*.log

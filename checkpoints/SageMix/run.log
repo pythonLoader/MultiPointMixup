@@ -961,3 +961,5 @@ Train 90, loss: 1.610920
 Test 90, loss: 2.092741, test acc: 0.852512, test avg acc: 0.793797, best test acc: 0.855348
 Train 91, loss: 1.603268
 Test 91, loss: 2.018660, test acc: 0.844003, test avg acc: 0.785169, best test acc: 0.855348
+Train 92, loss: 1.616478
+Test 92, loss: 2.169852, test acc: 0.834684, test avg acc: 0.786285, best test acc: 0.855348
