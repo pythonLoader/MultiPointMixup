@@ -3,6 +3,5 @@ data
 Co-Mixup
 .pyc
 .wandb
-wandb/
 wandb/*
-*.log
+wandb
