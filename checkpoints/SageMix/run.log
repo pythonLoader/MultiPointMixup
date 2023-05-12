@@ -1587,3 +1587,5 @@ Train 23, loss: 2.364861
 Test 23, loss: 2.231022, test acc: 0.748379, test avg acc: 0.661831, best test acc: 0.773906
 Train 24, loss: 2.081900
 Test 24, loss: 1.793805, test acc: 0.844408, test avg acc: 0.752983, best test acc: 0.844408
+Train 13, loss: 2.216950
+Test 13, loss: 2.231439, test acc: 0.745138, test avg acc: 0.655483, best test acc: 0.761750

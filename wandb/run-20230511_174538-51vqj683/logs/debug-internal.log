@@ -14317,3 +14317,36 @@
 2023-05-11 23:13:42,682 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: stop_status
 2023-05-11 23:13:42,683 DEBUG   SenderThread:325064 [sender.py:send_request():402] send_request: stop_status
 2023-05-11 23:13:43,904 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:13:46,959 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: status_report
+2023-05-11 23:13:47,908 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:13:51,912 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:13:52,284 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: status_report
+2023-05-11 23:13:55,915 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:13:57,694 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: keepalive
+2023-05-11 23:13:57,695 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: stop_status
+2023-05-11 23:13:57,695 DEBUG   SenderThread:325064 [sender.py:send_request():402] send_request: stop_status
+2023-05-11 23:13:57,758 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: status_report
+2023-05-11 23:13:57,917 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:14:01,921 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:14:03,684 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: status_report
+2023-05-11 23:14:05,924 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:14:07,927 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:14:09,052 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: status_report
+2023-05-11 23:14:11,385 DEBUG   SenderThread:325064 [sender.py:send():375] send: stats
+2023-05-11 23:14:11,931 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:14:12,695 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: stop_status
+2023-05-11 23:14:12,695 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: keepalive
+2023-05-11 23:14:12,695 DEBUG   SenderThread:325064 [sender.py:send_request():402] send_request: stop_status
+2023-05-11 23:14:14,761 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: status_report
+2023-05-11 23:14:15,934 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:14:17,936 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:14:20,296 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: status_report
+2023-05-11 23:14:21,940 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:14:25,479 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: status_report
+2023-05-11 23:14:25,945 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:14:27,790 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: stop_status
+2023-05-11 23:14:27,790 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: keepalive
+2023-05-11 23:14:27,791 DEBUG   SenderThread:325064 [sender.py:send_request():402] send_request: stop_status
+2023-05-11 23:14:29,948 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
+2023-05-11 23:14:31,239 DEBUG   HandlerThread:325064 [handler.py:handle_request():144] handle_request: status_report
+2023-05-11 23:14:31,951 INFO    Thread-12 :325064 [dir_watcher.py:_on_file_modified():295] file/dir modified: /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_174538-51vqj683/files/output.log
