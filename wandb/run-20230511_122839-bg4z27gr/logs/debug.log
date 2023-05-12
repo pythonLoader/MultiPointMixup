@@ -1,0 +1,33 @@
+2023-05-11 12:28:39,501 INFO    MainThread:3131612 [wandb_setup.py:_flush():76] Current SDK version is 0.15.2
+2023-05-11 12:28:39,502 INFO    MainThread:3131612 [wandb_setup.py:_flush():76] Configure stats pid to 3131612
+2023-05-11 12:28:39,502 INFO    MainThread:3131612 [wandb_setup.py:_flush():76] Loading settings from /afs/csail.mit.edu/u/s/shuvom/.config/wandb/settings
+2023-05-11 12:28:39,502 INFO    MainThread:3131612 [wandb_setup.py:_flush():76] Loading settings from /data/cb/shuvom/multimixup/MultiPointMixup/wandb/settings
+2023-05-11 12:28:39,502 INFO    MainThread:3131612 [wandb_setup.py:_flush():76] Loading settings from environment variables: {}
+2023-05-11 12:28:39,502 INFO    MainThread:3131612 [wandb_setup.py:_flush():76] Applying setup settings: {'_disable_service': False}
+2023-05-11 12:28:39,502 INFO    MainThread:3131612 [wandb_setup.py:_flush():76] Inferring run settings from compute environment: {'program_relpath': 'main.py', 'program': 'main.py'}
+2023-05-11 12:28:39,502 INFO    MainThread:3131612 [wandb_init.py:_log_setup():507] Logging user logs to /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_122839-bg4z27gr/logs/debug.log
+2023-05-11 12:28:39,502 INFO    MainThread:3131612 [wandb_init.py:_log_setup():508] Logging internal logs to /data/cb/shuvom/multimixup/MultiPointMixup/wandb/run-20230511_122839-bg4z27gr/logs/debug-internal.log
+2023-05-11 12:28:39,503 INFO    MainThread:3131612 [wandb_init.py:init():547] calling init triggers
+2023-05-11 12:28:39,503 INFO    MainThread:3131612 [wandb_init.py:init():554] wandb.init called with sweep_config: {}
+config: {'learning_rate': 0.001, 'architecture': 'DG-CNN', 'dataset': 'MN40', 'epochs': 50, 'classes': '2'}
+2023-05-11 12:28:39,503 INFO    MainThread:3131612 [wandb_init.py:init():596] starting backend
+2023-05-11 12:28:39,503 INFO    MainThread:3131612 [wandb_init.py:init():600] setting up manager
+2023-05-11 12:28:39,507 INFO    MainThread:3131612 [backend.py:_multiprocessing_setup():106] multiprocessing start_methods=fork,spawn,forkserver, using: spawn
+2023-05-11 12:28:39,511 INFO    MainThread:3131612 [wandb_init.py:init():606] backend started and connected
+2023-05-11 12:28:39,521 INFO    MainThread:3131612 [wandb_init.py:init():700] updated telemetry
+2023-05-11 12:28:39,624 INFO    MainThread:3131612 [wandb_init.py:init():737] communicating run to backend with 60.0 second timeout
+2023-05-11 12:28:40,823 INFO    MainThread:3131612 [wandb_run.py:_on_init():2177] communicating current version
+2023-05-11 12:28:40,892 INFO    MainThread:3131612 [wandb_run.py:_on_init():2186] got version response 
+2023-05-11 12:28:40,892 INFO    MainThread:3131612 [wandb_init.py:init():787] starting run threads in backend
+2023-05-11 12:28:48,431 INFO    MainThread:3131612 [wandb_run.py:_console_start():2158] atexit reg
+2023-05-11 12:28:48,432 INFO    MainThread:3131612 [wandb_run.py:_redirect():2013] redirect: SettingsConsole.WRAP_RAW
+2023-05-11 12:28:48,432 INFO    MainThread:3131612 [wandb_run.py:_redirect():2078] Wrapping output streams.
+2023-05-11 12:28:48,433 INFO    MainThread:3131612 [wandb_run.py:_redirect():2103] Redirects installed.
+2023-05-11 12:28:48,433 INFO    MainThread:3131612 [wandb_init.py:init():829] run started, returning control to user process
+2023-05-11 13:16:24,098 INFO    MainThread:3131612 [wandb_run.py:_finish():1893] finishing run shuvom/2-class-mixup/bg4z27gr
+2023-05-11 13:16:24,099 INFO    MainThread:3131612 [wandb_run.py:_atexit_cleanup():2127] got exitcode: 0
+2023-05-11 13:16:24,099 INFO    MainThread:3131612 [wandb_run.py:_restore():2110] restore
+2023-05-11 13:16:24,099 INFO    MainThread:3131612 [wandb_run.py:_restore():2116] restore done
+2023-05-11 13:16:28,247 WARNING MsgRouterThr:3131612 [router.py:message_loop():77] message_loop has been closed
+2023-05-11 13:16:38,107 INFO    MainThread:3131612 [wandb_run.py:_restore():2110] restore
+2023-05-11 13:16:38,108 INFO    MainThread:3131612 [wandb_run.py:_restore():2116] restore done

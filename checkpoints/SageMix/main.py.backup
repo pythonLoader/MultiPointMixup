@@ -19,7 +19,9 @@ from SageMix import SageMix
 from data import ModelNet40, ScanObjectNN
 from model import PointNet, DGCNN
 from util import cal_loss, cal_loss_mix, IOStream
+import wandb
 # import io
+
 
 
 def _init_():
@@ -86,6 +88,21 @@ def train(args, io):
     sagemix = SageMix(args, num_class)
     criterion = cal_loss_mix
 
+    # wandb.init(
+    #     # set the wandb project where this run will be logged
+    #     project="2-class-mixup",
+        
+    #     # track hyperparameters and run metadata
+    #     config={
+    #     "learning_rate": args.lr,
+    #     "architecture": "DG-CNN",
+    #     "dataset": "MN40",
+    #     "epochs": args.epochs,
+    #     "classes": "2",
+    #     }
+    # )
+
+
 
     best_test_acc = 0
     for epoch in range(args.epochs):
@@ -114,6 +131,7 @@ def train(args, io):
             opt.zero_grad()
             saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
             data, label = sagemix.mix(data, label, saliency)
+            print("label shape", label.shape)
 
             
             mixed_saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
@@ -165,7 +183,11 @@ def train(args, io):
                                                                               test_acc,
                                                                               avg_per_class_acc,
                                                                               best_test_acc)
+        
+        # wandb.log({"Test acc": test_acc, "test avg acc": avg_per_class_acc, "best test acc": best_test_acc})
         io.cprint(outstr)
+
+    # wandb.finish()
        
 
 
@@ -214,6 +236,8 @@ def test(args, io):
     avg_per_class_acc = metrics.balanced_accuracy_score(test_true, test_pred)
     outstr = 'Test :: test acc: %.6f, test avg acc: %.6f'%(test_acc, avg_per_class_acc)
     io.cprint(outstr)
+
+    
 
 
 if __name__ == "__main__":
