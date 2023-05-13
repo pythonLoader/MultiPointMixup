@@ -5,6 +5,7 @@ import glob
 import h5py
 import numpy as np
 from torch.utils.data import Dataset
+import json
 
 
 def download_modelnet():
@@ -19,22 +20,49 @@ def download_modelnet():
         os.system('mv %s %s' % ('modelnet40_ply_hdf5_2048', DATA_DIR))
         os.system('rm %s' % (zipfile))
 
+def insert_underscore(filename):
+    # Separate the extension
+    base_name, extension = os.path.splitext(filename)
+
+    # Split the base_name into the main part and the last digit
+    main_part = base_name[:-1]
+    last_digit = base_name[-1]
+
+    # Add an underscore before the last digit and return the new filename
+    new_base_name = main_part + "_" + last_digit
+
+    # Add the extension back
+    return new_base_name + extension
+
 def load_modelnet(partition):
     download_modelnet()
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    # BASE_DIR = "/home/ssawmya-local/CV/project/MultiPointmixup"
     DATA_DIR = os.path.join(BASE_DIR, 'data')
     all_data = []
     all_label = []
+    all_label_name = []
     for h5_name in glob.glob(os.path.join(DATA_DIR, 'modelnet40_ply_hdf5_2048', '*%s*.h5'%partition)):
         f = h5py.File(h5_name)
+        json_file = insert_underscore(h5_name)
+        json_file = json_file.replace('.h5','_id2file.json')
+        label_name_arr = list(json.load(open(json_file, 'r')))
+        label_name_arr = [label_name.split('/')[0] for label_name in label_name_arr]
+        
+        # insert a _ before the number in the filename
         data = f['data'][:].astype('float32')
         label = f['label'][:].astype('int64')
+
         f.close()
         all_data.append(data)
         all_label.append(label)
+        all_label_name.append(label_name_arr)
+    
     all_data = np.concatenate(all_data, axis=0)
     all_label = np.concatenate(all_label, axis=0)
-    return all_data, all_label
+    all_label_name = np.concatenate(all_label_name, axis=0)
+    return all_data, all_label, all_label_name
+
 
 def download_scanobjectnn():
     BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -78,17 +106,18 @@ def normalize_pointcloud(pointcloud):
 
 class ModelNet40(Dataset):
     def __init__(self, num_points, partition='train'):
-        self.data, self.label = load_modelnet(partition)
+        self.data, self.label,self.label_name = load_modelnet(partition)
         self.num_points = num_points
         self.partition = partition        
 
     def __getitem__(self, item):
         pointcloud = self.data[item][:self.num_points]
         label = self.label[item]
+        label_name = self.label_name[item]
         if self.partition == 'train':
             pointcloud = translate_pointcloud(pointcloud)
             np.random.shuffle(pointcloud)
-        return pointcloud, label
+        return pointcloud, label, label_name
 
     def __len__(self):
         return self.data.shape[0]
