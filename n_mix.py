@@ -205,8 +205,8 @@ class SageMix:
         # print(xyz.shape)
         B, N, _ = xyz.shape
         # print("saliency based", saliency_based)
-        mapping = self.find_optimal_mapping(xyz, saliency)
-        return 0
+        # mapping = self.find_optimal_mapping(xyz, saliency)
+        # return 0
         # print(mapping)
         # return 0
         # print(xyz.shape)
