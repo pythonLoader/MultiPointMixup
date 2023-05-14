@@ -1,3 +1,9 @@
 data
 *.zip
 Co-Mixup
+.pyc
+.wandb
+wandb/*
+wandb
+checkpoints/SageMix/run.log
+checkpoints/SageMix/models/model.t7
