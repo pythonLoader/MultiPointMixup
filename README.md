@@ -42,12 +42,3 @@ CUDA_VISIBLE_DEVICES=0,1 python main.py --exp_name=SageMix --model=dgcnn --data=
 CUDA_VISIBLE_DEVICES=$GPUs python main.py --eval=True --exp_name=SageMix --model=$model --data=$data --model_path=$PATH
 ```
 - Evaluation with trained model located at `$PATH`
-
-## Contact
-Let me know if you have any questions or concerns.
-> Sanghyeok Lee, cat0626@korea.ac.kr
-
-## Acknowledgement
-
-We borrow the codebase from [DGCNN](https://github.com/WangYueFt/dgcnn).  
-We use the code for EMD implemented in [MSN](https://github.com/Colin97/MSN-Point-Cloud-Completion).
