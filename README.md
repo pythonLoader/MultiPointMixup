@@ -1,4 +1,4 @@
-# SageMix for point cloud classification
+# N-mix: Extending point cloud mixup to multiple clouds 
 ## Installation
 ```
 # Create and activate environment using conda
