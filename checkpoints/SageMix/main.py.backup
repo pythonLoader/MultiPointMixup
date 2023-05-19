@@ -20,7 +20,17 @@ from data import ModelNet40, ScanObjectNN
 from model import PointNet, DGCNN
 from util import cal_loss, cal_loss_mix, IOStream
 import wandb
-# import io
+import io
+import random
+
+seed=1
+torch.manual_seed(seed)
+np.random.seed(seed)
+random.seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.deterministic = True
 
 
 
@@ -40,7 +50,7 @@ def train(args, io):
     if args.data == 'MN40':
         dataset = ModelNet40(partition='train', num_points=args.num_points)
         # args.batch_size = len(dataset)
-        args.batch_size = 32
+        args.batch_size = 24
         print('args.batch_size:',args.batch_size)
         train_loader = DataLoader(dataset, num_workers=8,
                                 batch_size=args.batch_size, shuffle=True, drop_last=True)
@@ -65,12 +75,17 @@ def train(args, io):
 
     #Try to load models
     if args.model == 'pointnet':
+        print('pointnet!!')
         model = PointNet(args, num_class).to(device)
     elif args.model == 'dgcnn':
+        print('dgcnn!!')
         model = DGCNN(args, num_class).to(device)
     else:
         raise Exception("Not implemented")
     print(str(model))
+
+    # print("conv1 weights:", model.conv1[0].weight.data)
+    # print("linear1 weights:", model.linear1.weight.data)  
 
     model = nn.DataParallel(model)
     print("Let's use", torch.cuda.device_count(), "GPUs!")
@@ -87,23 +102,31 @@ def train(args, io):
 
     sagemix = SageMix(args, num_class)
     criterion = cal_loss_mix
+    # print(args)
 
-    # wandb.init(
-    #     # set the wandb project where this run will be logged
-    #     project="2-class-mixup",
+    wandb.init(
+        # set the wandb project where this run will be logged
+        project="ScanObjectNN",
         
-    #     # track hyperparameters and run metadata
-    #     config={
-    #     "learning_rate": args.lr,
-    #     "architecture": "DG-CNN",
-    #     "dataset": "MN40",
-    #     "epochs": args.epochs,
-    #     "classes": "2",
-    #     }
-    # )
+        # track hyperparameters and run metadata
+        config={
+        "learning_rate": args.lr,
+        "architecture": "DG-CNN",
+        "dataset": "MN40",
+        "epochs": args.epochs,
+        "classes": "2",
+        "mixup": "SageMix",
+        }
+    )
 
-
-
+    
+    # for layer in model.children():
+    #     if isinstance(layer, nn.Linear):
+    #         print(layer.state_dict()['weight'])
+    #         print(layer.state_dict()['bias'])
+    # print("linear1 weights:", model.module.linear1.weight.data)
+    # torch.save(model.state_dict(), 'sagemix_weights.pth')
+    
     best_test_acc = 0
     for epoch in range(args.epochs):
 
@@ -127,21 +150,31 @@ def train(args, io):
             data_var = Variable(data.permute(0,2,1), requires_grad=True)
             logits = model(data_var)
             loss = cal_loss(logits, label, smoothing=False)
+            # print("eval loss", loss)
             loss.backward()
             opt.zero_grad()
             saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
+            # print("saliency", saliency)
+
             data, label = sagemix.mix(data, label, saliency)
-            print("label shape", label.shape)
+            # print("data, label", data[0], label[0])
+            # print("label shape", label.shape)
 
             
-            mixed_saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
+            # mixed_saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
             # print("data shape", data.shape)
             model.train()
             # break
                 
             opt.zero_grad()
+            # print("data, label", data.permute(0,2,1)[0], label[0])
             logits = model(data.permute(0,2,1))
             loss = criterion(logits, label)
+            # print("loss", loss)
+            
+            # print("logits", logits[0])
+            # print("loss", loss)
+            # exit()
             loss.backward()
             opt.step()
             preds = logits.max(dim=1)[1]
@@ -184,10 +217,10 @@ def train(args, io):
                                                                               avg_per_class_acc,
                                                                               best_test_acc)
         
-        # wandb.log({"Test acc": test_acc, "test avg acc": avg_per_class_acc, "best test acc": best_test_acc})
+        wandb.log({"Test acc": test_acc, "test avg acc": avg_per_class_acc, "best test acc": best_test_acc})
         io.cprint(outstr)
 
-    # wandb.finish()
+    wandb.finish()
        
 
 

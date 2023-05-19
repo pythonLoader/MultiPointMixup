@@ -24,3 +24,4 @@ config: {'learning_rate': 0.001, 'architecture': 'DG-CNN', 'dataset': 'MN40', 'e
 2023-05-11 17:45:46,406 INFO    MainThread:324617 [wandb_run.py:_redirect():2078] Wrapping output streams.
 2023-05-11 17:45:46,406 INFO    MainThread:324617 [wandb_run.py:_redirect():2103] Redirects installed.
 2023-05-11 17:45:46,407 INFO    MainThread:324617 [wandb_init.py:init():829] run started, returning control to user process
+2023-05-16 02:44:42,541 WARNING MsgRouterThr:324617 [router.py:message_loop():77] message_loop has been closed

@@ -24,8 +24,9 @@ def cal_loss(pred, gold, smoothing=True):
 
 def cal_loss_mix(pred, target):
     ''' Calculate cross entropy loss, apply label smoothing if needed. '''
-
+    # print("pred", pred[0])
     log_prb = F.log_softmax(pred, dim=1)
+    # print("log_prb", log_prb)
 
     loss = -(target * log_prb).sum(dim=1).mean()
     
