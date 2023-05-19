@@ -27,6 +27,16 @@ import torch.nn.functional as F
 import torch
 from emd_ import emd_module
 from scipy.optimize import linear_sum_assignment
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+seed=1
+torch.manual_seed(seed)
+np.random.seed(seed)
+random.seed(seed)
+torch.cuda.manual_seed(seed)
+torch.cuda.manual_seed_all(seed)
+torch.backends.cudnn.benchmark = False
+torch.backends.cudnn.deterministic = True
 
 class SageMix:
     def __init__(self, args, num_class=40):
@@ -120,12 +130,12 @@ class SageMix:
         # print("xyz", xyz.shape)
 
         pairwise_saliency_dist = torch.zeros(B, B)
-        print(saliency.shape)
+        # print(saliency.shape)
         # max_saliencies = saliency.max(dim=1)
         max_saliencies = torch.topk(saliency, k=k, dim=1)
         # print("max_saliencies shape", max_saliencies.shape)
         # idxs = max_saliencies.indices
-        idxs = torch.topk(saliency, k=5, dim=1).indices
+        idxs = torch.topk(saliency, k=k, dim=1).indices
 
         # Add an extra dimension to the arange tensor to match the dimensionality of 'idxs'.
         rows = torch.arange(xyz.size(0)).unsqueeze(-1)
@@ -163,23 +173,44 @@ class SageMix:
 
         # Divide each row by its sum to normalize it.
         normalized_distances = distances / row_sums
-        max_score = torch.max(normalized_distances)
+        max_score = torch.max(distances)
         distances_for_minimization = max_score - normalized_distances
 
-        # print("distances", distances)
+        max_score = torch.max(distances_for_minimization)
+
+        row_sums = distances_for_minimization.sum(dim=1, keepdim=True)
+
+        # Divide each row by its sum to normalize it.
+        normalized_distances = distances_for_minimization / row_sums
+
+        # print("distances", normalized_distances)
 
         
-        A_base = torch.eye(B)
+        A_base = torch.eye(B).to(device)
         omega = torch.distributions.beta.Beta(theta, theta).sample()
         # # print(omega)
-        cost = omega * A_base + (1-omega) * distances_for_minimization
-        print("costs", cost)
+        cost = omega * A_base + (1-omega) * normalized_distances
+        # print("omega", omega)
+        # print("costs", cost)
         
         # # print("normalized costs", A)
-        # row_ind, col_ind = linear_sum_assignment(cost)
-        # mapping = torch.zeros(B, 2)
-        # mapping[:, 0] = torch.tensor(row_ind)
-        # mapping[:, 1] = torch.tensor(col_ind)
+        mapping = torch.zeros(B, 10).to(device)
+        row_ind, col_ind = linear_sum_assignment(cost.cpu().detach().numpy())
+        mapping[:, 0] = torch.tensor(row_ind)
+        mapping[:, 1] = torch.tensor(col_ind)
+        
+        cost[mapping[:, 0].to(torch.int64), mapping[:, 1].to(torch.int64)] = 1000
+
+        for i in range(2,5):
+            # print("cost", cost)
+            row_ind, col_ind = linear_sum_assignment(cost.cpu().detach().numpy())
+            mapping[:, i] = torch.tensor(col_ind)
+            # print("mapping", mapping)
+            cost[mapping[:, 0].to(torch.int64), mapping[:, i].to(torch.int64)] = 1000
+
+
+
+        # print("mapping", mapping)
 
         # # To get the minimum cost
         # # min_cost = cost[row_ind, col_ind].sum()
@@ -187,7 +218,7 @@ class SageMix:
         # # print("Assigned Indices:")
         # # print(list(zip(row_ind, col_ind)))
         # # print("pairwise saliency dist", pairwise_saliency_dist)
-        # return mapping
+        return mapping.to(torch.int64)
     
 
 
@@ -206,13 +237,19 @@ class SageMix:
         B, N, _ = xyz.shape
         # print("saliency based", saliency_based)
         mapping = self.find_optimal_mapping(xyz, saliency)
-        return 0
+        idxs = mapping.T[:n_mix, :]
+        # print("idxs", idxs)
+        
         # print(mapping)
         # return 0
         # print(xyz.shape)
         # idxs = mapping[:,1].to(torch.int64) #torch.randperm(B)
-        idxs = torch.stack([torch.randperm(B) for _ in range(n_mix)])
+        # idxs = torch.stack([torch.randperm(B) for _ in range(n_mix-1)])
+
+        # print("idxs", idxs)
+        # return 0
         # idxs = torch.argsort(torch.rand(B, n_clouds))
+        # saliency_sagemix = saliency.clone()
 
         xyzs = torch.zeros((n_mix, B, N, 3)).cuda()
         for i in range(n_mix):
@@ -227,10 +264,13 @@ class SageMix:
         all_saliency = torch.zeros((n_mix, B, N)).cuda()
         all_saliency[0] = saliency
         for i in range(1, n_mix):
+            # print("EMD inputs", xyzs[0][0], xyzs[i][0])
             _, ass = self.EMD(xyzs[0], xyzs[i], 0.005, 500)
+            # print("assignment", ass)
 
             xyz_new = torch.zeros_like(xyzs[i]).cuda()
             saliency_new = torch.zeros_like(saliency).cuda()
+            # print(idxs[i-1])
             
             # print(ass,ass.shape)
             for j in range(B):
@@ -251,11 +291,13 @@ class SageMix:
         anchors = torch.zeros(n_mix, B, 3).cuda()
 
         saliency = saliency/saliency.sum(-1, keepdim=True)
-        anc_idx = torch.randint(0, 1024, (B,1)).cuda()
-        # anc_idx = torch.multinomial(saliency, 1, replacement=True)
+        # anc_idx = torch.randint(0, 1024, (B,1)).cuda()
+        anc_idx = torch.multinomial(saliency, 1, replacement=True)
         anchor_ori = all_xyz[0][torch.arange(B), anc_idx[:,0]]
         anchors[0] = anchor_ori
         # # print("anchor shape", anchor_ori.shape)
+        # print("saliency", saliency)
+        
 
         anc_idx_new = 0
         perm_saliency_new = 0
@@ -277,8 +319,8 @@ class SageMix:
 
 
         #     ## try to fix this at 0
-            # anc_idx_new = torch.multinomial(perm_saliency_new, 1, replacement=True)
-            anc_idx_new = torch.randint(0, 1024, (B,1)).cuda()
+            anc_idx_new = torch.multinomial(perm_saliency_new, 1, replacement=True)
+            # anc_idx_new = torch.randint(0, 1024, (B,1)).cuda()
             anchor_perm_new = all_xyz[i][torch.arange(B),anc_idx_new[:,0]]
             anchors[i] = anchor_perm_new
             # sub = perm_new - anchor_ori[:,None,:]
@@ -287,6 +329,12 @@ class SageMix:
         #     # perm_saliency = perm_saliency/perm_saliency.sum(-1, keepdim=True)
         # # alpha = self.dirichlet.sample((B,)).cuda()
         pi = torch.distributions.dirichlet.Dirichlet(torch.tensor([theta for i in range(n_mix)])).sample((B,)).cuda()
+        # print("anc_idx_new", anc_idx_new)
+        # print("perm saliency", perm_saliency_new)
+        # alpha = self.beta.sample((B,)).cuda()
+        # print("alpha", alpha)
+        # print("idxs", idxs)
+        # print("alpha nmix", alpha)
         # # print("pi shape", pi.shape)
         # # print("pi sum", pi.sum(1))
         
@@ -303,6 +351,8 @@ class SageMix:
         #     # print("kern weight ori", ker_weight_ori.shape)
 
             weights[i] = ker_weight_ori * pi[:,i][:,None]
+            # if i == 0: weights[i] = ker_weight_ori * alpha
+            # else: weights[i] = ker_weight_ori * (1-alpha) 
             weights_copy.append(weights[i][...,None])
 
             # ker_weight_fix = ker_weight_ori
@@ -312,11 +362,11 @@ class SageMix:
         weight = (torch.cat(weights_copy,-1)) + 1e-16
         weight = weight/weight.sum(-1)[...,None]
 
-        weight_old = weight.clone()
-        x = torch.zeros((B, N, 3)).cuda()
+        # weight_old = weight.clone()
+        x_nmix = torch.zeros((B, N, 3)).cuda()
 
         for i in range(n_mix):
-            x += weight[:, :, i:i+1] * all_xyz[i]
+            x_nmix += weight[:, :, i:i+1] * all_xyz[i]
         target = weight.sum(1)
         target = target / target.sum(-1, keepdim=True)
 
@@ -325,71 +375,150 @@ class SageMix:
         label_one_hots[0] = label_onehot
         # print("label_onehot shape", label_onehot.shape)
 
-        label = torch.zeros(B, self.num_class).cuda()
-        label += label_one_hots[0] * target[:, 0, None]
+        label_nmix = torch.zeros(B, self.num_class).cuda()
+        label_nmix += label_one_hots[0] * target[:, 0, None]
         
         for i in range(1, n_mix):
             label_perm_onehot = label_onehot[idxs[i]]
-            label += label_perm_onehot * target[:, i, None]
+            label_nmix += label_perm_onehot * target[:, i, None]
         # label
         # label_old = label
         # x_old = x
-        
-
-        # label = target[:, 0, None] * label_onehot + target[:, 1, None] * label_perm_onehot
-    
-        # x = weight[:,:,0:1] * xyz + weight[:,:,1:] * perm_new
-        # print("weight shape", weight.shape)
-
-            
-        # weight_ori = ker_weight_ori * alpha 
-        # weight_perm = ker_weight_perm * (1-alpha)
-        # weight = (torch.cat([weight_ori[...,None],weight_perm[...,None]],-1)) + 1e-16
-        # weight = weight/weight.sum(-1)[...,None]
-        
-        # print("all xyz", all_xyz[1])
-        # print("all saliency", all_saliency[1])
-
-        # print
-        # print(perms)
-
-        # assignments = torch.zeros((n_clouds, B, N))
-
-        # for i in range(n_clouds):
-
 
         # idxs = torch.randperm(B)
-        # idxs = idxs[1]
-        # # # Optimal assignment in Eq.(3)
+        # idxs = idxs[0]
+        # # print(idxs)
+
+        
+        # #Optimal assignment in Eq.(3)
         # perm = xyz[idxs]
+        
         
         # # _, ass = self.EMD(xyz, perm, 0.005, 500) # mapping
         # # ass = ass.long()
         # perm_new = torch.zeros_like(perm).cuda()
-        # perm_saliency = torch.zeros_like(all_saliency[0]).cuda()
-        # saliency = all_saliency[0]
+        # perm_saliency = torch.zeros_like(saliency).cuda()
         
-        # # # print(ass,ass.shape)
+        # # print(ass,ass.shape)
         # for i in range(B):
         #     perm_new[i] = perm[i][ass[i]]
-        #     perm_saliency[i] = saliency[idxs][i][ass[i]]
-        
-        # # print("perm new diff", torch.sum(torch.abs(perm_new - all_xyz[1])))
-        # # print("saliency diff", torch.sum(torch.abs(perm_saliency - all_saliency[1])))
-        # # print("perm saliency", perm_saliency)
-        # # print("all saliency", all_saliency[1])
-        
-        # # print("perm new", perm_new)
-        # # print("xyzs[1]", all_xyz[1])
+        #     perm_saliency[i] = saliency_sagemix[idxs][i][ass[i]]
+
         # # print("perm new diff", torch.sum(torch.abs(perm_new - all_xyz[1])))
         # # print("perm saliency diff", torch.sum(torch.abs(perm_saliency - all_saliency[1])))
-        # # # return 0
-        # # #####
-        # # # Saliency-guided sequential sampling
-        # # #####
-        # # #Eq.(4) in the main paper
-        # saliency = saliency/saliency.sum(-1, keepdim=True)
-        # # anc_idx = torch.multinomial(saliency, 1, replacement=True)
+        
+        # #####
+        # # Saliency-guided sequential sampling
+        # #####
+        # #Eq.(4) in the main paper
+        # saliency_sagemix = saliency_sagemix/saliency_sagemix.sum(-1, keepdim=True)
+
+
+        # # anc_idx = anc_idx_new #torch.multinomial(saliency_sagemix, 1, replacement=True)
+        # anchor_ori = xyz[torch.arange(B), anc_idx[:,0]]
+        
+        # #cal distance and reweighting saliency map for Eq.(5) in the main paper
+        # sub = perm_new - anchor_ori[:,None,:]
+        # dist = ((sub) ** 2).sum(2).sqrt()
+        # perm_saliency = perm_saliency * dist
+        # perm_saliency = perm_saliency/perm_saliency.sum(-1, keepdim=True)
+        
+        # #Eq.(5) in the main paper
+        # anc_idx2 = anc_idx_new # torch.multinomial(perm_saliency, 1, replacement=True)
+        # anchor_perm = perm_new[torch.arange(B),anc_idx2[:,0]]
+                
+                
+        # #####
+        # # Shape-preserving continuous Mixup
+        # #####
+        # # alpha = self.beta.sample((B,)).cuda()
+        # sub_ori = xyz - anchor_ori[:,None,:]
+        # sub_ori = ((sub_ori) ** 2).sum(2).sqrt()
+        # #Eq.(6) for first sample
+        # ker_weight_ori = torch.exp(-0.5 * (sub_ori ** 2) / (self.sigma ** 2))  #(M,N)
+        
+        # sub_perm = perm_new - anchor_perm[:,None,:]
+        # sub_perm = ((sub_perm) ** 2).sum(2).sqrt()
+        # #Eq.(6) for second sample
+        # ker_weight_perm = torch.exp(-0.5 * (sub_perm ** 2) / (self.sigma ** 2))  #(M,N)
+        
+        # # print("alpha sagemix", alpha)
+        # #Eq.(9)
+        # weight_ori = ker_weight_ori * alpha 
+        # weight_perm = ker_weight_perm * (1-alpha)
+        # weight = (torch.cat([weight_ori[...,None],weight_perm[...,None]],-1)) + 1e-16
+        # weight = weight/weight.sum(-1)[...,None]
+
+        # #Eq.(8) for new sample
+        # x_sagemix = weight[:,:,0:1] * xyz + weight[:,:,1:] * perm_new
+        
+        # #Eq.(8) for new label
+        # target = weight.sum(1)
+        # target = target / target.sum(-1, keepdim=True)
+        
+        # # if mixing_idx == 0:
+        # label_onehot = torch.zeros(B, self.num_class).cuda().scatter(1, label.view(-1, 1), 1)
+        # label_perm_onehot = label_onehot[idxs]
+        # label_sagemix = target[:, 0, None] * label_onehot + target[:, 1, None] * label_perm_onehot
+
+        # # else:
+        # #     label_onehot = torch.zeros(B, self.num_class).cuda().scatter(1, label.view(-1, 1), 1)
+        
+
+        # # label = target[:, 0, None] * label_onehot + target[:, 1, None] * label_perm_onehot
+    
+        # # x = weight[:,:,0:1] * xyz + weight[:,:,1:] * perm_new
+        # # print("weight shape", weight.shape)
+
+            
+        # # weight_ori = ker_weight_ori * alpha 
+        # # weight_perm = ker_weight_perm * (1-alpha)
+        # # weight = (torch.cat([weight_ori[...,None],weight_perm[...,None]],-1)) + 1e-16
+        # # weight = weight/weight.sum(-1)[...,None]
+        
+        # # print("all xyz", all_xyz[1])
+        # # print("all saliency", all_saliency[1])
+
+        # # print
+        # # print(perms)
+
+        # # assignments = torch.zeros((n_clouds, B, N))
+
+        # # for i in range(n_clouds):
+
+
+        # # idxs = torch.randperm(B)
+        # # idxs = idxs[1]
+        # # # # Optimal assignment in Eq.(3)
+        # # perm = xyz[idxs]
+        
+        # # # _, ass = self.EMD(xyz, perm, 0.005, 500) # mapping
+        # # # ass = ass.long()
+        # # perm_new = torch.zeros_like(perm).cuda()
+        # # perm_saliency = torch.zeros_like(all_saliency[0]).cuda()
+        # # saliency = all_saliency[0]
+        
+        # # # # print(ass,ass.shape)
+        # # for i in range(B):
+        # #     perm_new[i] = perm[i][ass[i]]
+        # #     perm_saliency[i] = saliency[idxs][i][ass[i]]
+        
+        # # # print("perm new diff", torch.sum(torch.abs(perm_new - all_xyz[1])))
+        # # # print("saliency diff", torch.sum(torch.abs(perm_saliency - all_saliency[1])))
+        # # # print("perm saliency", perm_saliency)
+        # # # print("all saliency", all_saliency[1])
+        
+        # # # print("perm new", perm_new)
+        # # # print("xyzs[1]", all_xyz[1])
+        # # # print("perm new diff", torch.sum(torch.abs(perm_new - all_xyz[1])))
+        # # # print("perm saliency diff", torch.sum(torch.abs(perm_saliency - all_saliency[1])))
+        # # # # return 0
+        # # # #####
+        # # # # Saliency-guided sequential sampling
+        # # # #####
+        # # # #Eq.(4) in the main paper
+        # # saliency = saliency/saliency.sum(-1, keepdim=True)
+        # # # anc_idx = torch.multinomial(saliency, 1, replacement=True)
         # # anc_idx = torch.randint(0, 1024, (B,1)).cuda()
         # # print(anc_idx)
         # anchor_ori = xyz[torch.arange(B), anc_idx[:,0]]
@@ -465,10 +594,11 @@ class SageMix:
         # label_onehot = torch.zeros(B, self.num_class).cuda().scatter(1, label_ori.view(-1, 1), 1)
         # label_perm_onehot = label_onehot[idxs]
         # label_new = target[:, 0, None] * label_onehot + target[:, 1, None] * label_perm_onehot
-        # print("label diff", torch.sum(torch.abs(label_new - label_old)))
-        # print("x diff", torch.sum(torch.abs(x_new - x_old)))
-        
-        return x, label
+        # print("label diff", torch.sum(torch.abs(label_sagemix - label_nmix)))
+        # print("x diff", torch.sum(torch.abs(x_sagemix - x_nmix)))
+        # print("label", label_nmix)
+        # print("x", x_nmix)
+        return x_nmix, label_nmix
     
 
 def distance(z, dist_type='l2'):
@@ -559,12 +689,17 @@ def train(args, io):
 
     #Try to load models
     if args.model == 'pointnet':
+        print('pointnet!!')
         model = PointNet(args, num_class).to(device)
     elif args.model == 'dgcnn':
+        print('dgcnn!!')
         model = DGCNN(args, num_class).to(device)
     else:
         raise Exception("Not implemented")
     print(str(model))
+
+    # print("conv1 weights:", model.conv1[0].weight.data)
+    # print("linear1 weights:", model.linear1.weight.data) 
 
     model = nn.DataParallel(model)
     print("Let's use", torch.cuda.device_count(), "GPUs!")
@@ -581,12 +716,13 @@ def train(args, io):
 
     sagemix = SageMix(args, num_class)
     criterion = cal_loss_mix
+    # print(args)
 
     mixup = "random" if args.fixed_mixup is None else "fixed {}".format(args.fixed_mixup)
 
     # wandb.init(
     #     # set the wandb project where this run will be logged
-    #     project="2-class-mixup",
+    #     project="fixed-seed",
         
     #     # track hyperparameters and run metadata
     #     config={
@@ -596,10 +732,34 @@ def train(args, io):
     #     "epochs": args.epochs,
     #     "classes": "up to 4",
     #     "random_mixup": mixup,
+    #     "implementation": "nmix",
     #     }
     # )
 
+    wandb.init(
+        # set the wandb project where this run will be logged
+        project="ScanObjectNN",
+        
+        # track hyperparameters and run metadata
+        config={
+        "learning_rate": args.lr,
+        "architecture": "DG-CNN",
+        "dataset": "MN40",
+        "epochs": args.epochs,
+        "classes": args.fixed_mixup,
+        "mixup": "N-Mix",
+        "permutation": "saliency",
+        }
+    )
 
+    # for layer in model.children():
+    #     print("layer:", layer)
+    #     if isinstance(layer, nn.Linear):
+    #         print(layer.state_dict()['weight'])
+    #         print(layer.state_dict()['bias'])
+    # print("linear1 weights:", model.module.linear1.weight.data)
+    # torch.save(model.state_dict(), 'nmix_weights.pth')
+       
 
     best_test_acc = 0
     for epoch in range(args.epochs):
@@ -633,13 +793,17 @@ def train(args, io):
                 data_var = Variable(data.permute(0,2,1), requires_grad=True)
                 logits = model(data_var)
                 loss = cal_loss(logits, label, smoothing=False)
+                # print("eval loss", loss)
                 loss.backward()
                 opt.zero_grad()
                 saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
                 
                 # saliency_based=False
                 # if args.mapping is not 'emd': saliency_based=True
+                # print("saliency", saliency)
                 data, label = sagemix.mix(data, label, saliency, n_mix)
+                # print("data, label", data, label)
+                # print("data, label", data[0], label[0])
 
             
                 # mixed_saliency = torch.sqrt(torch.mean(data_var.grad**2,1))
@@ -650,16 +814,24 @@ def train(args, io):
             # break
                 
             opt.zero_grad()
+            # print("data, label", data.permute(0,2,1)[0], label[0])
             logits = model(data.permute(0,2,1))
             if n_mix > 1:
                 loss = criterion(logits, label)
             else:
                 loss = cal_loss(logits, label)
+           
+            # print("logits", logits[0])
+            # print("loss", loss)
+            # exit()
             loss.backward()
             opt.step()
             preds = logits.max(dim=1)[1]
             count += batch_size
             train_loss += loss.item() * batch_size
+        
+        # if epoch % 10 == 0:
+        #     print("label", torch.topk(label, k=3, dim=1).values)
         
         scheduler.step()
         outstr = 'Train %d, loss: %.6f' % (epoch, train_loss*1.0/count)
@@ -696,12 +868,14 @@ def train(args, io):
                                                                               test_acc,
                                                                               avg_per_class_acc,
                                                                               best_test_acc)
+
         
-        # wandb.log({"Test acc": test_acc, "test avg acc": avg_per_class_acc, "best test acc": best_test_acc, "epoch": epoch})"})
+        
+        wandb.log({"Test acc": test_acc, "test avg acc": avg_per_class_acc, "best test acc": best_test_acc, "epoch": epoch})
         # wandb.log({"n_mix": n_mix})
         io.cprint(outstr)
 
-    # wandb.finish()
+    wandb.finish()
        
 
 
@@ -836,3 +1010,8 @@ if __name__ == "__main__":
         train(args, io)
     else:
         test(args, io)
+
+
+
+
+

@@ -20,12 +20,14 @@ class SageMix:
         B, N, _ = xyz.shape
         # print(xyz.shape)
         idxs = torch.randperm(B)
+        # print("idxs", idxs)
 
         
         #Optimal assignment in Eq.(3)
         perm = xyz[idxs]
-        
+        # print("EMD inputs", xyz[0], perm[0])
         _, ass = self.EMD(xyz, perm, 0.005, 500) # mapping
+        # print("assignment", ass)
         ass = ass.long()
         perm_new = torch.zeros_like(perm).cuda()
         perm_saliency = torch.zeros_like(saliency).cuda()
@@ -42,22 +44,27 @@ class SageMix:
         saliency = saliency/saliency.sum(-1, keepdim=True)
         anc_idx = torch.multinomial(saliency, 1, replacement=True)
         anchor_ori = xyz[torch.arange(B), anc_idx[:,0]]
+        # print("anc_idx", anc_idx)
+        # print("saliency", saliency)
         
         #cal distance and reweighting saliency map for Eq.(5) in the main paper
         sub = perm_new - anchor_ori[:,None,:]
         dist = ((sub) ** 2).sum(2).sqrt()
         perm_saliency = perm_saliency * dist
         perm_saliency = perm_saliency/perm_saliency.sum(-1, keepdim=True)
+        # print("perm saliency", perm_saliency)
         
         #Eq.(5) in the main paper
         anc_idx2 = torch.multinomial(perm_saliency, 1, replacement=True)
         anchor_perm = perm_new[torch.arange(B),anc_idx2[:,0]]
+        # print("anc_idx2", anc_idx2)
                 
                 
         #####
         # Shape-preserving continuous Mixup
         #####
         alpha = self.beta.sample((B,)).cuda()
+        # print("alpha", alpha)
         sub_ori = xyz - anchor_ori[:,None,:]
         sub_ori = ((sub_ori) ** 2).sum(2).sqrt()
         #Eq.(6) for first sample
@@ -90,5 +97,7 @@ class SageMix:
             label_onehot = torch.zeros(B, self.num_class).cuda().scatter(1, label.view(-1, 1), 1)
 
         
+        # print("label", label)
+        # print("x", x)
         return x, label
     

@@ -108,6 +108,7 @@ class DGCNN(nn.Module):
         self.linear3 = nn.Linear(256, output_channels)
 
     def forward(self, x):
+        # print("x passed in", x[0])
         batch_size = x.size(0)
         x = get_graph_feature(x, k=self.k)
         x = self.conv1(x)
