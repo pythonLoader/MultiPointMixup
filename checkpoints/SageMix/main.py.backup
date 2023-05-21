@@ -90,6 +90,7 @@ def train(args, io):
     model = nn.DataParallel(model)
     print("Let's use", torch.cuda.device_count(), "GPUs!")
 
+    # lr = 0 + 0.5 * (0.1 - 0.001) * (1 + np.cos(np.pi *  / 500))
     if args.use_sgd:
         print("Use SGD")
         opt = optim.SGD(model.parameters(), lr=args.lr*100, momentum=args.momentum, weight_decay=1e-4)
@@ -97,27 +98,29 @@ def train(args, io):
         print("Use Adam")
         opt = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
 
+    # lr = 0 + 0.5 * (0.1 - 0.001) * (1 + np.cos(np.pi * 365 / 500))
     scheduler = CosineAnnealingLR(opt, args.epochs, eta_min=args.lr)
+    print(scheduler.get_lr())
     
 
     sagemix = SageMix(args, num_class)
     criterion = cal_loss_mix
     # print(args)
 
-    wandb.init(
-        # set the wandb project where this run will be logged
-        project="ScanObjectNN",
+    # wandb.init(
+    #     # set the wandb project where this run will be logged
+    #     project="ScanObjectNN",
         
-        # track hyperparameters and run metadata
-        config={
-        "learning_rate": args.lr,
-        "architecture": "DG-CNN",
-        "dataset": "MN40",
-        "epochs": args.epochs,
-        "classes": "2",
-        "mixup": "SageMix",
-        }
-    )
+    #     # track hyperparameters and run metadata
+    #     config={
+    #     "learning_rate": args.lr,
+    #     "architecture": args.model,
+    #     "dataset": "MN40",
+    #     "epochs": args.epochs,
+    #     "classes": "2",
+    #     "mixup": "SageMix",
+    #     }
+    # )
 
     
     # for layer in model.children():
@@ -210,17 +213,21 @@ def train(args, io):
         avg_per_class_acc = metrics.balanced_accuracy_score(test_true, test_pred)
         if test_acc >= best_test_acc:
             best_test_acc = test_acc
-            torch.save(model.state_dict(), 'checkpoints/%s/models/model.t7' % args.exp_name)
+            # torch.save(model.state_dict(), 'checkpoints/%s/models/model.t7' % args.exp_name)
+            torch.save(model.state_dict(), 'cached_models/sagemix_dataset_{}_model_{}_epochs_{}.pth'.format(args.data, args.model, epoch))
         outstr = 'Test %d, loss: %.6f, test acc: %.6f, test avg acc: %.6f, best test acc: %.6f' % (epoch,
                                                                               test_loss*1.0/count,
                                                                               test_acc,
                                                                               avg_per_class_acc,
                                                                               best_test_acc)
         
-        wandb.log({"Test acc": test_acc, "test avg acc": avg_per_class_acc, "best test acc": best_test_acc})
+        # wandb.log({"Test acc": test_acc, "test avg acc": avg_per_class_acc, "best test acc": best_test_acc})
         io.cprint(outstr)
 
-    wandb.finish()
+        # if epoch % 100 == 0:
+            # torch.save(model.state_dict(), 'checkpoints/%s/models/model_%d.t7' % (args.exp_name, epoch))
+
+    # wandb.finish()
        
 
 
@@ -312,6 +319,7 @@ if __name__ == "__main__":
     parser.add_argument('--model_path', type=str, default='', metavar='N',
                         help='Pretrained model path')
     
+    
     parser.add_argument('--sigma', type=float, default=-1) 
     parser.add_argument('--theta', type=float, default=0.2) 
     args = parser.parse_args()
@@ -322,6 +330,9 @@ if __name__ == "__main__":
             args.sigma=0.3
         elif args.model=="pointnet":
             args.sigma=2.0
+
+    # if args.fine_tune:
+        
     
     if args.model=='dgcnn':
         args.use_sgd=True

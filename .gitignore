@@ -7,3 +7,5 @@ wandb/*
 wandb
 checkpoints/SageMix/run.log
 checkpoints/SageMix/models/model.t7
+cached_models/*
+fine_tuned_models/*
