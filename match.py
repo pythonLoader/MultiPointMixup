@@ -63,7 +63,7 @@ def mix_input(mask_onehot, input_sp, target_reweighted, sc=None):
     
 
     ##### CHECK THIS
-    print("mask one hot shape inside mix input", mask_onehot.shape)
+    # print("mask one hot shape inside mix input", mask_onehot.shape)
     # mask_onehot_im = F.interpolate(mask_onehot.permute(0, 3, 1, 2),
     #                                size=input_sp.shape[-1],
     #                                mode='nearest')
@@ -112,7 +112,7 @@ def resolve_label(assigned_label_total, device='cuda'):
 def graphcut_multi(cost, beta=1, algorithm='swap', n_label=0, add_idx=None):
     '''find optimal labeling using Graph-Cut algorithm'''
     # height, width, n_input = cost.shape
-    print("cost shape inside graphcut multi", cost.shape)
+    # print("cost shape inside graphcut multi", cost.shape)
     n_points, n_input = cost.shape
 
     unary = np.ascontiguousarray(cost)
@@ -178,13 +178,13 @@ def graphcut_wrapper(cost_penalty, label_count, n_input, n_points, beta, device,
         assigned_label = torch.zeros_like(assigned_label)
         assigned_label[indices] = True
         
-        print("cost penalty shape inside graphcut wrapper elif", cost_penalty.shape)
+        # print("cost penalty shape inside graphcut wrapper elif", cost_penalty.shape)
         # cost_add = torch.matmul(cost_penalty[:, :, assigned_label], soft_label) - 5e-4
         ##### CHECK THIS
         cost_add = torch.matmul(cost_penalty[:, assigned_label], soft_label) - 5e-4
         cost_penalty = torch.cat([cost_penalty, cost_add], dim=-1)
-        print("cost add shape", cost_add.shape)
-        print("cost penalty after concat", cost_penalty.shape)
+        # print("cost add shape", cost_add.shape)
+        # print("cost penalty after concat", cost_penalty.shape)
         unary = cost_penalty.cpu().numpy()
 
         mask_idx_np = graphcut_multi(unary,
@@ -201,7 +201,7 @@ def graphcut_wrapper(cost_penalty, label_count, n_input, n_points, beta, device,
 
         idx_matrix = torch.zeros([3, n_input], device=device)
         idx_matrix[:, assigned_label] = soft_label
-        print("mask idx onehot shape inside graphcut wrapper elif", mask_idx_onehot.shape)
+        # print("mask idx onehot shape inside graphcut wrapper elif", mask_idx_onehot.shape)
 
         # mask_onehot_i = mask_idx_onehot[:, :, :n_input] + torch.matmul(
         #     mask_idx_onehot[:, :, n_input:], idx_matrix)
@@ -312,13 +312,13 @@ def get_onehot_matrix(cost_matrix,
                                                   beta, device, iter_idx)
                 # penalty += mask_onehot[i].reshape([height * width,
                 #                                    n_input]).sum(0).reshape(-1, 1, 1)
-                print("penalty shape", penalty.shape)
-                print("mask onehot shape", mask_onehot.shape)
-                print("before penalty")
+                # print("penalty shape", penalty.shape)
+                # print("mask onehot shape", mask_onehot.shape)
+                # print("before penalty")
                 penalty += mask_onehot[i].reshape([n_points,
                                                    n_input]).sum(0).reshape(-1, 1, 1)
 
-                print("penalty is OK")
+                # print("penalty is OK")
             if iter_idx == niter - 2 and set_resolve:
                 #### HERE
                 assigned_label_total = (mask_onehot.reshape(n_output, -1, n_input).sum(1) >

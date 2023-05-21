@@ -28,6 +28,7 @@ import torch
 from emd_ import emd_module
 from scipy.optimize import linear_sum_assignment
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+import copy
 
 seed=1
 torch.manual_seed(seed)
@@ -687,6 +688,7 @@ def train(args, io):
     
     device = torch.device("cuda" if args.cuda else "cpu")
 
+    print(args.model)
     #Try to load models
     if args.model == 'pointnet':
         print('pointnet!!')
@@ -698,18 +700,49 @@ def train(args, io):
         raise Exception("Not implemented")
     print(str(model))
 
+    # modelA = ModelA()
+    # modelB = ModelB()
+    # state_dict = model.state_dict()
+    # new_state_dict = {k.replace('module.', ''): v for k, v in model.state_dict().items()}
+    # model.load_state_dict(new_state_dict)
+
+    print(args.fine_tune)
+    if args.fine_tune:
+        # Load the original state_dict (with 'module.' prefix)
+        state_dict = torch.load(args.fine_tune)
+
+        # Create a new state_dict without 'module.' prefix
+        new_state_dict = {k.replace('module.', ''): v for k, v in state_dict.items()}
+
+        # Load the new state_dict into model
+        model.load_state_dict(new_state_dict)
+
+        # model.load_state_dict(torch.load(args.fine_tune))
+
     # print("conv1 weights:", model.conv1[0].weight.data)
     # print("linear1 weights:", model.linear1.weight.data) 
 
     model = nn.DataParallel(model)
     print("Let's use", torch.cuda.device_count(), "GPUs!")
 
+
     if args.use_sgd:
         print("Use SGD")
-        opt = optim.SGD(model.parameters(), lr=args.lr*100, momentum=args.momentum, weight_decay=1e-4)
+        if not args.fine_tune:
+            opt = optim.SGD(model.parameters(), lr=args.lr*100, momentum=args.momentum, weight_decay=1e-4)
+        else:
+            print(type(args.lr), args.lr)
+            print(type(args.last_epoch), args.last_epoch)
+            lr = 0 + 0.5 * (0.1 - args.lr) * (1 + np.cos(np.pi * args.last_epoch / 500))
+            opt = optim.SGD(model.parameters(), lr=lr, momentum=args.momentum, weight_decay=1e-4)
     else:
         print("Use Adam")
-        opt = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
+        if not args.fine_tune:
+            opt = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
+        else:
+            # print()
+            lr = 0 + 0.5 * (0.1 - args.lr) * (1 + np.cos(np.pi * args.last_epoch / 500))
+            opt = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
 
     scheduler = CosineAnnealingLR(opt, args.epochs, eta_min=args.lr)
     
@@ -720,35 +753,19 @@ def train(args, io):
 
     mixup = "random" if args.fixed_mixup is None else "fixed {}".format(args.fixed_mixup)
 
-    # wandb.init(
-    #     # set the wandb project where this run will be logged
-    #     project="fixed-seed",
-        
-    #     # track hyperparameters and run metadata
-    #     config={
-    #     "learning_rate": args.lr,
-    #     "architecture": "DG-CNN",
-    #     "dataset": "MN40",
-    #     "epochs": args.epochs,
-    #     "classes": "up to 4",
-    #     "random_mixup": mixup,
-    #     "implementation": "nmix",
-    #     }
-    # )
-
+    wandb_name = "finetuning-" + args.model + "-" + args.data
     wandb.init(
         # set the wandb project where this run will be logged
-        project="ScanObjectNN",
+        project=wandb_name,
         
         # track hyperparameters and run metadata
         config={
-        "learning_rate": args.lr,
-        "architecture": "DG-CNN",
-        "dataset": "MN40",
-        "epochs": args.epochs,
+        # "learning_rate": args.lr,
+        "architecture": args.model,
+        "dataset": args.data,
+        "last epoch": args.last_epoch,
         "classes": args.fixed_mixup,
-        "mixup": "N-Mix",
-        "permutation": "saliency",
+        "implementation": "nmix",
         }
     )
 
@@ -762,7 +779,7 @@ def train(args, io):
        
 
     best_test_acc = 0
-    for epoch in range(args.epochs):
+    for epoch in range(args.last_epoch, args.epochs):
 
         ####################
         # Train
@@ -862,7 +879,8 @@ def train(args, io):
         avg_per_class_acc = metrics.balanced_accuracy_score(test_true, test_pred)
         if test_acc >= best_test_acc:
             best_test_acc = test_acc
-            torch.save(model.state_dict(), 'checkpoints/%s/models/model.t7' % args.exp_name)
+            # torch.save(model.state_dict(), 'checkpoints/%s/models/model.t7' % args.exp_name)
+            torch.save(model.state_dict(), 'finetuned_models/FINETUNED_{}mix_dataset_{}_model_{}_epochs_{}.pth'.format(args.fixed_mixup, args.data, args.model, epoch))
         outstr = 'Test %d, loss: %.6f, test acc: %.6f, test avg acc: %.6f, best test acc: %.6f' % (epoch,
                                                                               test_loss*1.0/count,
                                                                               test_acc,
@@ -872,7 +890,7 @@ def train(args, io):
         
         
         wandb.log({"Test acc": test_acc, "test avg acc": avg_per_class_acc, "best test acc": best_test_acc, "epoch": epoch})
-        # wandb.log({"n_mix": n_mix})
+        wandb.log({"n_mix": n_mix})
         io.cprint(outstr)
 
     wandb.finish()
@@ -893,6 +911,8 @@ def test(args, io):
                                 batch_size=args.test_batch_size, shuffle=True, drop_last=False)
         num_class =15
     device = torch.device("cuda" if args.cuda else "cpu")
+
+    
 
     #Try to load models
     if args.model == 'pointnet':
@@ -972,6 +992,8 @@ if __name__ == "__main__":
                         help='Pretrained model path')
     parser.add_argument('--fixed_mixup', type=str, default=None, metavar='N',
                         help='number of mixes')
+    parser.add_argument('--last_epoch', type=str, default=0)
+    parser.add_argument('--fine_tune', type=str, default=False)
                         
     
     
@@ -981,6 +1003,14 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     print(args)
+    if args.fine_tune:
+        str_split = args.fine_tune.split("_")
+        print(str_split)
+        args.model = str_split[-3]
+        args.last_epoch = int(str_split[-1].split(".")[0])
+    # args.data = str_split[2] + "_" + str_split[3]
+
+
     if args.sigma==-1:
         if args.model=='dgcnn':
             args.sigma=0.3
