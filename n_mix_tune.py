@@ -8,6 +8,7 @@ import torch.nn as nn
 import torch.optim as optim
 import sklearn.metrics as metrics
 import numpy as np
+import pandas as pd
 import random
 from functools import partial
 
@@ -34,7 +35,7 @@ from torch.autograd import Variable
 from torch.utils.data import DataLoader
 from tqdm import tqdm
 
-
+tqdm._instances.clear()
 # from SageMix import SageMix
 from data import ModelNet40, ScanObjectNN
 from model import PointNet, DGCNN
@@ -154,6 +155,8 @@ class SageMix:
             _, ass = self.EMD(xyzs[0], xyzs[i], 0.005, 500)
             xyz_new = torch.zeros_like(xyzs[i]).cuda()
             saliency_new = torch.zeros_like(saliency).cuda()
+            # print("ass type:",ass.dtype)
+            ass = ass.type(torch.LongTensor)
             for j in range(B):
                 all_xyz[i][j] = xyzs[i][j][ass[j]]
                 all_saliency[i][j] = saliency[idxs[i]][j][ass[j]]
@@ -293,7 +296,7 @@ def _init_():
     os.system('cp util.py checkpoints' + '/' + args.exp_name + '/' + 'util.py.backup')
     os.system('cp data.py checkpoints' + '/' + args.exp_name + '/' + 'data.py.backup')
 
-def train(config, checkpoint_dir=None):
+def train(config, args):
     print(args)
     if args.data == 'MN40':
         dataset = ModelNet40(partition='train', num_points=args.num_points)
@@ -320,6 +323,7 @@ def train(config, checkpoint_dir=None):
     
     
     device = torch.device("cuda" if args.cuda else "cpu")
+    print(device)
 
     # print(args.model)
     #Try to load models
@@ -461,7 +465,8 @@ def train(config, checkpoint_dir=None):
         
         scheduler.step()
         outstr = 'Train %d, loss: %.6f' % (epoch, train_loss*1.0/count)
-        io.cprint(outstr)
+        # print(outstr)
+        # io.cprint(outstr)
 
         ####################
         # Test
@@ -490,8 +495,8 @@ def train(config, checkpoint_dir=None):
         if test_acc >= best_test_acc:
             best_test_acc = test_acc
             # torch.save(model.state_dict(), 'checkpoints/%s/models/model.t7' % args.exp_name)
-            torch.save(model.state_dict(), 'hyperparametertuned_models/HPTUNED_{}mix_dataset_{}_model_{}_epochs_{}.pth'.format(args.fixed_mixup, args.data, args.model, epoch))
-        session.report(loss=test_loss, test_acc=test_acc,test_avg_acc = avg_per_class_acc,best_test_acc = best_test_acc)
+            # torch.save(model.state_dict(), 'hyperparametertuned_models/HPTUNED_{}mix_dataset_{}_model_{}_epochs_{}.pth'.format(args.fixed_mixup, args.data, args.model, epoch))
+        tune.report(loss=test_loss, test_acc=test_acc,test_avg_acc = avg_per_class_acc,best_test_acc = best_test_acc)
         outstr = 'Test %d, loss: %.6f, test acc: %.6f, test avg acc: %.6f, best test acc: %.6f' % (epoch,
                                                                               test_loss*1.0/count,
                                                                               test_acc,
@@ -502,7 +507,8 @@ def train(config, checkpoint_dir=None):
         
         wandb.log({"Test acc": test_acc, "test avg acc": avg_per_class_acc, "best test acc": best_test_acc, "epoch": epoch})
         wandb.log({"n_mix": n_mix})
-        io.cprint(outstr)
+        print(outstr)
+        # io.cprint(outstr)
 
     wandb.finish()
        
@@ -554,7 +560,7 @@ def test(args, io):
     test_acc = metrics.accuracy_score(test_true, test_pred)
     avg_per_class_acc = metrics.balanced_accuracy_score(test_true, test_pred)
     outstr = 'Test :: test acc: %.6f, test avg acc: %.6f'%(test_acc, avg_per_class_acc)
-    io.cprint(outstr)
+    # io.cprint(outstr)
 
     
 
@@ -658,11 +664,6 @@ if __name__ == "__main__":
     config = {
         "lr": tune.loguniform(1e-4, 1e-1),
         "batch_size": tune.choice([8, 16, 24, 32])
-        # "wandb": {
-        #     "project": wandb_name,
-        #     # "api_key_file": "/path/to/file",
-        #     "log_config": True
-        # }
     }
 
     # scheduler = ASHAScheduler(
@@ -677,49 +678,70 @@ if __name__ == "__main__":
     
 
 
-    io = IOStream('checkpoints/' + args.exp_name + '/run.log')
-    io.cprint(str(args))
+    # io = IOStream('checkpoints/' + args.exp_name + '/run.log')
+    # io.cprint(str(args))
 
     args.cuda = not args.no_cuda and torch.cuda.is_available()
     torch.manual_seed(args.seed)
     if args.cuda:
-        io.cprint(
+        print(
             'Using GPU : ' + str(torch.cuda.current_device()) + ' from ' + str(torch.cuda.device_count()) + ' devices')
         torch.cuda.manual_seed(args.seed)
     else:
-        io.cprint('Using CPU')
+        print('Using CPU')
     
-   
+    trainable = tune.with_parameters(train, args=args)
+    trainable = tune.with_resources(trainable, {"gpu":2,"cpu":10})
 
-    # tuner = tune.Tuner(
-    #     # partial(train, args=args, io = io),
-    #     # train,
-    #     train,
-    #     # resources_per_trial={"cpu": 1, "gpu": 1},
-    #     tune_config=tune.TuneConfig(
-    #         metric="test_acc",
-    #         mode = "max",
-    #         num_samples=10,
-    #         scheduler = ASHAScheduler()
-    #     ),
-    #     param_space = config,
-    #     run_config=air.RunConfig(
-    #         callbacks=[
-    #             WandbLoggerCallback(project=wandb_name)
-    #         ]
-    #     )
-    # )
     tuner = tune.Tuner(
-        train,
+        # partial(train, args=args, io = io),
+        trainable,
+        # resources_per_trial={"cpu": 1, "gpu": 1},
         tune_config=tune.TuneConfig(
             metric="test_acc",
             mode = "max",
             num_samples=10,
             scheduler = ASHAScheduler()
         ),
-        param_space = config
+        param_space = config,
+        run_config=air.RunConfig(
+            callbacks=[
+                WandbLoggerCallback(project=wandb_name)
+            ]
+        )
     )
-    tuner.fit()
+    # tuner = tune.Tuner(
+    #     train,
+    #     tune_config=tune.TuneConfig(
+    #         metric="test_acc",
+    #         mode = "max",
+    #         num_samples=10,
+    #         scheduler = ASHAScheduler()
+    #     ),
+    #     param_space = config
+    # )
+    results = tuner.fit()
+    result_grid = results
+    df = results.get_dataframe()
+
+    num_results = len(result_grid)
+
+    # Check if there have been errors
+    if result_grid.errors:
+        print("At least one trial failed.")
+
+    # Get the best result
+    best_result = result_grid.get_best_result()
+
+    # And the best checkpoint
+    best_checkpoint = best_result.checkpoint
+
+    # And the best metrics
+    best_metric = best_result.metrics
+
+    df.to_csv("raytuning_lr_bsz.csv")
+    print(best_metric)
+
 
     # best_trial = result.get_best_trial("test_acc", "max", "last")
     # print("Best trial config: {}".format(best_trial.config))
