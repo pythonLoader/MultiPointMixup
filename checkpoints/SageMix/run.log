@@ -24253,3 +24253,11 @@ Train 498, loss: 1.608978
 Test 498, loss: 1.974028, test acc: 0.910859, test avg acc: 0.879831, best test acc: 0.925851
 Train 499, loss: 1.611943
 Test 499, loss: 1.945025, test acc: 0.899919, test avg acc: 0.869965, best test acc: 0.925851
+Namespace(batch_size=32, data='MN40', dropout=0.5, emb_dims=1024, epochs=1, eval=False, exp_name='SageMix', fine_tune=False, fixed_mixup=None, k=20, last_epoch=0, lr=0.1, m_omega=0.9, mapping='emd', model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=0.3, test_batch_size=16, theta=0.2, use_sgd=True)
+Using GPU : 0 from 1 devices
+Namespace(batch_size=32, data='MN40', dropout=0.5, emb_dims=1024, epochs=1, eval=False, exp_name='SageMix', fine_tune=False, fixed_mixup=None, k=20, last_epoch=0, lr=0.1, m_omega=0.9, mapping='emd', model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=0.3, test_batch_size=16, theta=0.2, use_sgd=True)
+Using GPU : 0 from 1 devices
+Namespace(batch_size=32, data='SONN_hard', dropout=0.5, emb_dims=1024, epochs=500, eval=False, exp_name='SageMix', k=20, lr=0.001, model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=0.3, test_batch_size=16, theta=0.2, use_sgd=True)
+Using GPU : 0 from 1 devices
+Train 0, loss: 2.552705
+Test 0, loss: 2.288269, test acc: 0.383414, test avg acc: 0.277876, best test acc: 0.383414

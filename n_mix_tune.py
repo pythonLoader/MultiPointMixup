@@ -304,19 +304,19 @@ def train(config, args):
         # args.batch_size = 24
         # print('args.batch_size:',config["batch_size"])
         train_loader = DataLoader(dataset, num_workers=8,
-                                batch_size=32, shuffle=True, drop_last=True)
+                                batch_size=16, shuffle=True, drop_last=True)
         test_loader = DataLoader(ModelNet40(partition='test', num_points=args.num_points), num_workers=8,
                                 batch_size=args.test_batch_size, shuffle=True, drop_last=False)
         num_class=40
     elif args.data == 'SONN_easy':
         train_loader = DataLoader(ScanObjectNN(partition='train', num_points=args.num_points, ver="easy"), num_workers=8,
-                                batch_size=32, shuffle=True, drop_last=True)
+                                batch_size=16, shuffle=True, drop_last=True)
         test_loader = DataLoader(ScanObjectNN(partition='test', num_points=args.num_points, ver="easy"), num_workers=8,
                                 batch_size=args.test_batch_size, shuffle=True, drop_last=False)
         num_class =15
     elif args.data == 'SONN_hard':
         train_loader = DataLoader(ScanObjectNN(partition='train', num_points=args.num_points, ver="hard"), num_workers=8,
-                                batch_size=32, shuffle=True, drop_last=True)
+                                batch_size=16, shuffle=True, drop_last=True)
         test_loader = DataLoader(ScanObjectNN(partition='test', num_points=args.num_points, ver="hard"), num_workers=8,
                                 batch_size=args.test_batch_size, shuffle=True, drop_last=False)
         num_class =15
@@ -403,7 +403,7 @@ def train(config, args):
             "theta": config["theta"],
         }
     )
-    print("theta", args.theta)
+    
    
 
        
@@ -497,7 +497,7 @@ def train(config, args):
         if test_acc >= best_test_acc:
             best_test_acc = test_acc
             # torch.save(model.state_dict(), 'checkpoints/%s/models/model.t7' % args.exp_name)
-            torch.save(model.state_dict(), 'hyperparametertuned_models/HPTUNED_{}mix_dataset_{}_model_{}_epochs_{}.pth'.format(args.fixed_mixup, args.data, args.model, epoch))
+            torch.save(model.state_dict(), '/data/cb/shuvom/multimixup/MultiPointMixup/hyperparametertuned_models/HPTUNED_{}mix_dataset_{}_model_{}_epochs_{}.pth'.format(args.fixed_mixup, args.data, args.model, epoch))
         tune.report(loss=test_loss, test_acc=test_acc,test_avg_acc = avg_per_class_acc,best_test_acc = best_test_acc)
         outstr = 'Test %d, loss: %.6f, test acc: %.6f, test avg acc: %.6f, best test acc: %.6f' % (epoch,
                                                                               test_loss*1.0/count,

@@ -728,21 +728,21 @@ def train(args, io):
 
     if args.use_sgd:
         print("Use SGD")
-        if not args.fine_tune:
-            opt = optim.SGD(model.parameters(), lr=args.lr*100, momentum=args.momentum, weight_decay=1e-4)
-        else:
-            print(type(args.lr), args.lr)
-            print(type(args.last_epoch), args.last_epoch)
-            lr = 0 + 0.5 * (0.1 - args.lr) * (1 + np.cos(np.pi * args.last_epoch / 500))
-            opt = optim.SGD(model.parameters(), lr=lr, momentum=args.momentum, weight_decay=1e-4)
+        # if not args.fine_tune:
+        opt = optim.SGD(model.parameters(), lr=args.lr*100, momentum=args.momentum, weight_decay=1e-4)
+        # else:
+        #     print(type(args.lr), args.lr)
+        #     print(type(args.last_epoch), args.last_epoch)
+        #     lr = 0 + 0.5 * (0.1 - args.lr) * (1 + np.cos(np.pi * args.last_epoch / 500))
+        #     opt = optim.SGD(model.parameters(), lr=lr, momentum=args.momentum, weight_decay=1e-4)
     else:
         print("Use Adam")
-        if not args.fine_tune:
-            opt = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
-        else:
-            # print()
-            lr = 0 + 0.5 * (0.1 - args.lr) * (1 + np.cos(np.pi * args.last_epoch / 500))
-            opt = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
+        # if not args.fine_tune:
+        opt = optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
+        # else:
+        #     # print()
+        #     lr = 0 + 0.5 * (0.1 - args.lr) * (1 + np.cos(np.pi * args.last_epoch / 500))
+        #     opt = optim.Adam(model.parameters(), lr=lr, weight_decay=1e-4)
 
     scheduler = CosineAnnealingLR(opt, args.epochs, eta_min=args.lr)
     

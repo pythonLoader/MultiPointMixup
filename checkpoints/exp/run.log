@@ -86,3 +86,7 @@ Train 28, loss: 2.323850
 Test 28, loss: 2.202474, test acc: 0.765397, test avg acc: 0.657628, best test acc: 0.779984
 Train 29, loss: 2.310728
 Test 29, loss: 2.130177, test acc: 0.781199, test avg acc: 0.681610, best test acc: 0.781199
+Namespace(batch_size=32, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='exp', fine_tune=False, fixed_mixup=None, k=20, last_epoch=0, lr=0.0252483909361709, m_omega=0.9, mapping='emd', model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=0.3, test_batch_size=16, theta=0.2, use_sgd=True)
+Using GPU : 0 from 1 devices
+Namespace(batch_size=32, data='MN40', dropout=0.5, emb_dims=1024, epochs=50, eval=False, exp_name='exp', fine_tune=False, fixed_mixup=None, k=20, last_epoch=0, lr=0.1, m_omega=0.9, mapping='emd', model='dgcnn', model_path='', momentum=0.9, no_cuda=False, num_points=1024, seed=1, sigma=0.3, test_batch_size=16, theta=0.2, use_sgd=True)
+Using GPU : 0 from 1 devices
